@@ -138,3 +138,117 @@ textarea {
   background: var(--surface);
   color: var(--text);
 }
+
+.banner-text {
+  margin: 0 0 8px;
+}
+
+.banner-text:last-child {
+  margin-bottom: 0;
+}
+
+.timer {
+  font-size: 2.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.audio {
+  width: 100%;
+}
+
+.rating {
+  display: flex;
+  gap: 4px;
+}
+
+.rating-star {
+  min-width: 48px;
+  min-height: 48px;
+  font-size: 1.6rem;
+  border: none;
+  background: none;
+  color: var(--border);
+  cursor: pointer;
+}
+
+.rating-star-on {
+  color: #f5a524;
+}
+
+.question {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.page-header {
+  margin-bottom: 12px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.grow {
+  flex: 1;
+}
+
+.button-danger {
+  color: var(--danger-text);
+  border-color: var(--danger-text);
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  flex: 1;
+  min-height: 44px;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tab[aria-selected='true'] {
+  color: var(--text);
+  border-bottom-color: var(--primary);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.list-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.list-title {
+  font-weight: 600;
+}

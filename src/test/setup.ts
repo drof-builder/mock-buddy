@@ -6,3 +6,7 @@ import { afterEach } from 'vitest'
 afterEach(() => {
   cleanup()
 })
+
+// jsdom has no object URLs; tests that care replace these with spies.
+if (!URL.createObjectURL) URL.createObjectURL = () => 'blob:test'
+if (!URL.revokeObjectURL) URL.revokeObjectURL = () => {}
