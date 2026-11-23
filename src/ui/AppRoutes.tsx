@@ -5,16 +5,9 @@ import { History } from './screens/History'
 import { Home } from './screens/Home'
 import { MockInterview } from './screens/MockInterview'
 import { MockReview } from './screens/MockReview'
+import { MyQuestions } from './screens/MyQuestions'
 import { QuickPractice } from './screens/QuickPractice'
 import { useServices } from './services'
-
-function Placeholder({ title }: { title: string }) {
-  return (
-    <main className="page">
-      <h1>{title}</h1>
-    </main>
-  )
-}
 
 export function AppRoutes() {
   const { storage } = useServices()
@@ -31,7 +24,7 @@ export function AppRoutes() {
       <Route path="/mock/:sessionId/review" element={<MockReview />} />
       <Route path="/history" element={<History />} />
       <Route path="/history/answer/:answerId" element={<AnswerDetail />} />
-      <Route path="/questions" element={<Placeholder title="My Questions" />} />
+      <Route path="/questions" element={<MyQuestions />} />
     </Routes>
   )
 }

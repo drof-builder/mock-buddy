@@ -24,7 +24,7 @@ the device.
   More roles in future updates.
 - Recording: audio only, stored on the device.
 - Two modes: Quick Practice and Mock Interview.
-- Stack: React + TypeScript + Vite PWA, hosted on GitHub Pages.
+- Stack: React + TypeScript + Vite PWA, hosted on Vercel (changed from GitHub Pages on 2026-11-24).
 
 ### Out of scope (v1)
 
@@ -159,9 +159,10 @@ problem-solving, multitasking.
 - `vite-plugin-pwa`: manifest, icons, offline precache of app shell.
 - Plain CSS with CSS variables, mobile-first; light and dark theme via
   `prefers-color-scheme`. Touch targets ≥ 44px.
-- Vitest + React Testing Library + `fake-indexeddb`; ESLint.
-- GitHub Actions: on PR → lint, typecheck, test, build. On push to `main`
-  → also deploy to GitHub Pages (`base` set to `/mock-buddy/`).
+- Vitest + React Testing Library + `fake-indexeddb`; oxlint (the Vite template's linter).
+- GitHub Actions: on PR and push → lint, typecheck, test, build.
+- Hosting: Vercel Git integration — push to `main` deploys production, each PR
+  gets a preview URL. App served from the site root (`base: '/'`).
 
 ## 4. Data model
 
@@ -245,4 +246,4 @@ green before merge.
    starter questions.
 2. **Quick Practice + History** — first usable version.
 3. **Mock Interview + Review.**
-4. **My Questions + PWA/offline + GitHub Pages deploy** → v1.0.0.
+4. **My Questions + PWA/offline + Vercel deploy** → v1.0.0.
