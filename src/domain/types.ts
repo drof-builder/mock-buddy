@@ -34,6 +34,9 @@ export interface Answer {
   createdAt: number
 }
 
+/** An answer without its audio — what list screens need. */
+export type AnswerSummary = Omit<Answer, 'audio'>
+
 export interface MockSession {
   id: string
   role: Role

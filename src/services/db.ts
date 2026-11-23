@@ -1,6 +1,6 @@
 import Dexie, { type EntityTable } from 'dexie'
 import { averageRating } from '../domain/ratings'
-import type { Answer, MockSession, Question, Rating, Role, Settings } from '../domain/types'
+import type { Answer, AnswerSummary, MockSession, Question, Rating, Role, Settings } from '../domain/types'
 
 export class StorageFullError extends Error {
   constructor() {
@@ -24,7 +24,7 @@ export interface Repository {
   saveAnswer(a: Answer): Promise<void>
   updateAnswer(id: string, patch: { rating?: Rating; note?: string }): Promise<void>
   getAnswer(id: string): Promise<Answer | undefined>
-  listQuickAnswers(): Promise<Answer[]>
+  listQuickAnswers(): Promise<AnswerSummary[]>
   deleteAnswer(id: string): Promise<void>
   createSession(role: Role): Promise<MockSession>
   addAnswerToSession(sessionId: string, a: Answer): Promise<void>
@@ -40,13 +40,20 @@ export interface Repository {
   setStarterHidden(id: string, hidden: boolean): Promise<void>
 }
 
-/** Answers are stored with raw bytes instead of a Blob: this is more reliable on Safari. */
-type StoredAnswer = Omit<Answer, 'audio'> & { audio: ArrayBuffer }
+/**
+ * Audio lives in its own table so list screens never load recordings into memory.
+ * It is stored as raw bytes instead of a Blob, which is more reliable on Safari.
+ */
+interface StoredAudio {
+  id: string
+  bytes: ArrayBuffer
+}
 type StoredQuestion = Question & { createdAt: number }
 type StoredSettings = Settings & { key: 'settings' }
 
 type MockBuddyDb = Dexie & {
-  answers: EntityTable<StoredAnswer, 'id'>
+  answers: EntityTable<AnswerSummary, 'id'>
+  answerAudio: EntityTable<StoredAudio, 'id'>
   sessions: EntityTable<MockSession, 'id'>
   customQuestions: EntityTable<StoredQuestion, 'id'>
   settings: EntityTable<StoredSettings, 'key'>
@@ -80,12 +87,13 @@ async function guardQuota<T>(write: () => Promise<T>): Promise<T> {
   }
 }
 
-function fromStored(s: StoredAnswer): Answer {
-  return { ...s, audio: new Blob([s.audio], { type: s.mimeType }) }
+async function split(a: Answer): Promise<{ summary: AnswerSummary; audio: StoredAudio }> {
+  const { audio, ...summary } = a
+  return { summary, audio: { id: a.id, bytes: await blobToArrayBuffer(audio) } }
 }
 
-async function toStored(a: Answer): Promise<StoredAnswer> {
-  return { ...a, audio: await blobToArrayBuffer(a.audio) }
+function join(summary: AnswerSummary, audio: StoredAudio | undefined): Answer {
+  return { ...summary, audio: new Blob(audio ? [audio.bytes] : [], { type: summary.mimeType }) }
 }
 
 function stripCreatedAt({ createdAt: _createdAt, ...q }: StoredQuestion): Question {
@@ -96,6 +104,7 @@ export function createRepository(dbName = 'mock-buddy'): Repository {
   const db = new Dexie(dbName) as MockBuddyDb
   db.version(1).stores({
     answers: 'id, mode, sessionId, createdAt',
+    answerAudio: 'id',
     sessions: 'id, createdAt',
     customQuestions: 'id, createdAt',
     settings: 'key',
@@ -108,8 +117,13 @@ export function createRepository(dbName = 'mock-buddy'): Repository {
 
   return {
     async saveAnswer(a) {
-      const stored = await toStored(a)
-      await guardQuota(() => db.answers.put(stored))
+      const { summary, audio } = await split(a)
+      await guardQuota(() =>
+        db.transaction('rw', db.answers, db.answerAudio, async () => {
+          await db.answerAudio.put(audio)
+          await db.answers.put(summary)
+        }),
+      )
     },
 
     async updateAnswer(id, patch) {
@@ -117,23 +131,24 @@ export function createRepository(dbName = 'mock-buddy'): Repository {
     },
 
     async getAnswer(id) {
-      const s = await db.answers.get(id)
-      return s && fromStored(s)
+      const summary = await db.answers.get(id)
+      return summary && join(summary, await db.answerAudio.get(id))
     },
 
     async listQuickAnswers() {
       const rows = await db.answers.where('mode').equals('quick').toArray()
-      return rows.sort((a, b) => b.createdAt - a.createdAt).map(fromStored)
+      return rows.sort((a, b) => b.createdAt - a.createdAt)
     },
 
     async deleteAnswer(id) {
-      await db.transaction('rw', db.answers, db.sessions, async () => {
+      await db.transaction('rw', db.answers, db.answerAudio, db.sessions, async () => {
         const a = await db.answers.get(id)
         if (a?.sessionId) {
           const s = await db.sessions.get(a.sessionId)
           if (s) await db.sessions.update(s.id, { answerIds: s.answerIds.filter((x) => x !== id) })
         }
         await db.answers.delete(id)
+        await db.answerAudio.delete(id)
       })
     },
 
@@ -144,13 +159,16 @@ export function createRepository(dbName = 'mock-buddy'): Repository {
     },
 
     async addAnswerToSession(sessionId, a) {
-      const stored = await toStored(a)
+      const { summary, audio } = await split(a)
       await guardQuota(() =>
-        db.transaction('rw', db.answers, db.sessions, async () => {
+        db.transaction('rw', db.answers, db.answerAudio, db.sessions, async () => {
           const s = await db.sessions.get(sessionId)
           if (!s) throw new Error(`Unknown session ${sessionId}`)
-          await db.answers.put(stored)
-          await db.sessions.update(sessionId, { answerIds: [...s.answerIds, a.id] })
+          await db.answerAudio.put(audio)
+          await db.answers.put(summary)
+          if (!s.answerIds.includes(a.id)) {
+            await db.sessions.update(sessionId, { answerIds: [...s.answerIds, a.id] })
+          }
         }),
       )
     },
@@ -162,8 +180,11 @@ export function createRepository(dbName = 'mock-buddy'): Repository {
     async getSession(id) {
       const session = await db.sessions.get(id)
       if (!session) return undefined
-      const rows = await db.answers.bulkGet(session.answerIds)
-      const answers = rows.flatMap((r) => (r ? [fromStored(r)] : []))
+      const [rows, audio] = await Promise.all([
+        db.answers.bulkGet(session.answerIds),
+        db.answerAudio.bulkGet(session.answerIds),
+      ])
+      const answers = rows.flatMap((r, i) => (r ? [join(r, audio[i])] : []))
       return { session, answers }
     },
 
@@ -179,8 +200,10 @@ export function createRepository(dbName = 'mock-buddy'): Repository {
     },
 
     async deleteSession(id) {
-      await db.transaction('rw', db.answers, db.sessions, async () => {
-        await db.answers.where('sessionId').equals(id).delete()
+      await db.transaction('rw', db.answers, db.answerAudio, db.sessions, async () => {
+        const ids = await db.answers.where('sessionId').equals(id).primaryKeys()
+        await db.answerAudio.bulkDelete(ids)
+        await db.answers.bulkDelete(ids)
         await db.sessions.delete(id)
       })
     },

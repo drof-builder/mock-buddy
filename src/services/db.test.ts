@@ -1,9 +1,20 @@
+import Dexie from 'dexie'
 import { describe, expect, test } from 'vitest'
 import type { Answer } from '../domain/types'
 import { blobToArrayBuffer, createRepository, StorageFullError, type Repository } from './db'
 
+let lastDbName = ''
 function newRepo(): Repository {
-  return createRepository(`test-${crypto.randomUUID()}`)
+  lastDbName = `test-${crypto.randomUUID()}`
+  return createRepository(lastDbName)
+}
+
+async function audioRowCount(): Promise<number> {
+  const raw = new Dexie(lastDbName)
+  await raw.open()
+  const n = await raw.table('answerAudio').count()
+  raw.close()
+  return n
 }
 
 let counter = 0
@@ -40,6 +51,22 @@ describe('answers', () => {
     await repo.saveAnswer(makeAnswer({ id: 'new', createdAt: 2 }))
     await repo.saveAnswer(makeAnswer({ id: 'mock', mode: 'mock', sessionId: 's', createdAt: 3 }))
     expect((await repo.listQuickAnswers()).map((a) => a.id)).toEqual(['new', 'old'])
+  })
+
+  test('list rows do not carry audio, but getAnswer does', async () => {
+    const repo = newRepo()
+    await repo.saveAnswer(makeAnswer({ id: 'a1' }))
+    const [row] = await repo.listQuickAnswers()
+    expect('audio' in row).toBe(false)
+    expect(row.mimeType).toBe('audio/webm')
+    expect((await repo.getAnswer('a1'))!.audio.size).toBe(1)
+  })
+
+  test('deleting an answer also deletes its audio', async () => {
+    const repo = newRepo()
+    await repo.saveAnswer(makeAnswer({ id: 'a1' }))
+    await repo.deleteAnswer('a1')
+    expect(await audioRowCount()).toBe(0)
   })
 
   test('updateAnswer sets rating and note', async () => {
@@ -101,6 +128,25 @@ describe('mock sessions', () => {
     await repo.deleteSession(s.id)
     expect(await repo.getSession(s.id)).toBeUndefined()
     expect(await repo.getAnswer('gone')).toBeUndefined()
+  })
+
+  test('adding the same answer twice lists it once', async () => {
+    const repo = newRepo()
+    const s = await repo.createSession('behavioral')
+    const a = makeAnswer({ id: 'dup', mode: 'mock', sessionId: s.id, rating: 3 })
+    await repo.addAnswerToSession(s.id, a)
+    await repo.addAnswerToSession(s.id, a)
+    const got = await repo.getSession(s.id)
+    expect(got!.session.answerIds).toEqual(['dup'])
+    expect(got!.answers).toHaveLength(1)
+  })
+
+  test('deleteSession also deletes the audio of its answers', async () => {
+    const repo = newRepo()
+    const s = await repo.createSession('behavioral')
+    await repo.addAnswerToSession(s.id, makeAnswer({ id: 'm1', mode: 'mock', sessionId: s.id }))
+    await repo.deleteSession(s.id)
+    expect(await audioRowCount()).toBe(0)
   })
 
   test('deleteAnswer also removes it from its session', async () => {
