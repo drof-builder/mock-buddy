@@ -155,7 +155,7 @@ customer-service: difficult-customers, de-escalation, empathy,
 problem-solving, multitasking.
 
 ### Tooling
-- Vite, React 18, TypeScript strict, React Router (HashRouter), Dexie.
+- Vite, React (current version from the Vite react-ts template), TypeScript strict, React Router (HashRouter), Dexie.
 - `vite-plugin-pwa`: manifest, icons, offline precache of app shell.
 - Plain CSS with CSS variables, mobile-first; light and dark theme via
   `prefers-color-scheme`. Touch targets ≥ 44px.
