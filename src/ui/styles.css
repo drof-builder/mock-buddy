@@ -264,3 +264,33 @@ textarea {
   font-weight: 600;
   vertical-align: middle;
 }
+
+h2 {
+  font-size: 1.15rem;
+  margin: 8px 0 0;
+}
+
+summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.starter-list {
+  margin-top: 8px;
+}
+
+.starter-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+}
+
+.starter-hidden span {
+  color: var(--muted);
+  text-decoration: line-through;
+}
