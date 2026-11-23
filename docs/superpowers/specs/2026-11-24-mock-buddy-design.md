@@ -158,7 +158,10 @@ troubleshooting, soft-skills (2026-11-24: fresh-graduate hospitality-tech
 set added; technical-knowledge split into three topics; Technical Support
 is pitched at people with no support-job experience, so ts-018 was retired); customer-service:
 basic-screening, situational, role-play, tools-metrics, soft-skills.
-Display names and order live in `src/ui/format.ts`. Question ids never
+Display names and order live in `src/ui/format.ts`. Category groups live
+in `src/domain/categoryGroups.ts`: `technical-knowledge` groups networking,
+windows-ad, computer-basics-security and databases-sql — Quick Practice
+shows the group in the Category list and a Topic dropdown to narrow it. Question ids never
 change (hidden-question settings depend on them).
 
 ### Tooling

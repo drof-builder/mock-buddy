@@ -148,4 +148,37 @@ describe('Quick Practice', () => {
     expect(container.querySelector('audio')).not.toBeNull()
     expect(screen.getByRole('button', { name: 'Save & Next' })).toBeEnabled()
   })
+
+  test('Technical knowledge mixes its topics, and a topic narrows it down', async () => {
+    const user = userEvent.setup()
+    renderWithServices('/practice')
+    await shownQuestion()
+    await user.selectOptions(screen.getByLabelText('Role'), 'Technical Support')
+    await user.selectOptions(screen.getByLabelText('Category'), 'Technical knowledge')
+
+    const technical = STARTER_QUESTIONS.filter(
+      (q) => q.role === 'tech-support' && ['networking', 'windows-ad', 'computer-basics-security', 'databases-sql'].includes(q.category),
+    ).map((q) => q.text)
+    await waitFor(async () => expect(technical).toContain(await shownQuestion()))
+
+    await user.selectOptions(screen.getByLabelText('Topic'), 'databases-sql')
+    const sql = STARTER_QUESTIONS.filter((q) => q.category === 'databases-sql').map((q) => q.text)
+    for (let i = 0; i < sql.length; i++) {
+      expect(sql).toContain(await shownQuestion())
+      await user.click(screen.getByRole('button', { name: 'Skip' }))
+    }
+  })
+
+  test('changing the category clears the topic', async () => {
+    const user = userEvent.setup()
+    renderWithServices('/practice')
+    await shownQuestion()
+    await user.selectOptions(screen.getByLabelText('Role'), 'Technical Support')
+    await user.selectOptions(screen.getByLabelText('Category'), 'Technical knowledge')
+    await user.selectOptions(screen.getByLabelText('Topic'), 'Networking')
+    await user.selectOptions(screen.getByLabelText('Category'), 'Hotel systems')
+    expect(screen.queryByLabelText('Topic')).toBeNull()
+    await user.selectOptions(screen.getByLabelText('Category'), 'Technical knowledge')
+    expect(screen.getByLabelText('Topic')).toHaveDisplayValue('All technical knowledge')
+  })
 })

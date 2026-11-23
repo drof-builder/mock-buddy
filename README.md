@@ -17,7 +17,7 @@ rate yourself. Everything stays on your device — no account, no server.
 Starter roles and question types (131 questions):
 
 - **Behavioral:** Basic / screening · Past experience (STAR) · Work style
-- **Technical Support:** Basic / screening · Networking · Windows & Active Directory · Computer basics & security · Databases & SQL · Hotel systems · Troubleshooting · Soft skills
+- **Technical Support:** Basic / screening · Technical knowledge (topics: Networking · Windows & Active Directory · Computer basics & security · Databases & SQL) · Hotel systems · Troubleshooting · Soft skills
 - **Customer Service:** Basic / screening · Situational · Role-play · Tools & metrics · Soft skills
 
 ## Install on your phone

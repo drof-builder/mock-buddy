@@ -87,6 +87,55 @@ describe('RoleCategoryPicker', () => {
   })
 })
 
+describe('RoleCategoryPicker — topics', () => {
+  const techCategories = ['basic-screening', 'networking', 'windows-ad', 'databases-sql', 'hotel-systems']
+
+  function renderPicker(category: string, topic = '', onTopicChange = vi.fn(), onCategoryChange = vi.fn()) {
+    render(
+      <RoleCategoryPicker
+        role="tech-support"
+        category={category}
+        topic={topic}
+        categories={techCategories}
+        onRoleChange={() => {}}
+        onCategoryChange={onCategoryChange}
+        onTopicChange={onTopicChange}
+      />,
+    )
+    return { onTopicChange, onCategoryChange }
+  }
+
+  test('the category list shows the group instead of its topics', () => {
+    renderPicker('')
+    const select = screen.getByLabelText('Category') as HTMLSelectElement
+    const options = Array.from(select.options).map((o) => o.textContent)
+    expect(options).toEqual(['Any category', 'Basic / screening', 'Technical knowledge', 'Hotel systems'])
+  })
+
+  test('picking the group shows a Topic dropdown with its topics', () => {
+    renderPicker('technical-knowledge')
+    const topic = screen.getByLabelText('Topic')
+    expect(topic).toHaveDisplayValue('All technical knowledge')
+    expect(Array.from((topic as HTMLSelectElement).options).map((o) => o.textContent)).toEqual([
+      'All technical knowledge',
+      'Networking',
+      'Windows & Active Directory',
+      'Databases & SQL',
+    ])
+  })
+
+  test('choosing a topic reports it', async () => {
+    const { onTopicChange } = renderPicker('technical-knowledge')
+    await userEvent.selectOptions(screen.getByLabelText('Topic'), 'databases-sql')
+    expect(onTopicChange).toHaveBeenCalledWith('databases-sql')
+  })
+
+  test('no Topic dropdown for a category without topics', () => {
+    renderPicker('hotel-systems')
+    expect(screen.queryByLabelText('Topic')).toBeNull()
+  })
+})
+
 describe('ErrorBanner', () => {
   test('shows the message and an optional action', async () => {
     const onAction = vi.fn()

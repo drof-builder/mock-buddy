@@ -64,3 +64,13 @@ test('sortCategories keeps the technical support topics in reading order', () =>
     'soft-skills',
   ])
 })
+
+test('the technical knowledge group has a name and sits before its topics', () => {
+  expect(categoryLabel('technical-knowledge')).toBe('Technical knowledge')
+  expect(sortCategories(['hotel-systems', 'technical-knowledge', 'basic-screening', 'soft-skills'])).toEqual([
+    'basic-screening',
+    'technical-knowledge',
+    'hotel-systems',
+    'soft-skills',
+  ])
+})

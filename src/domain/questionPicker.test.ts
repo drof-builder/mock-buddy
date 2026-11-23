@@ -34,6 +34,18 @@ describe('filterQuestions', () => {
     expect(filterQuestions(all, { role: 'behavioral', category: 'conflict' }).map((x) => x.id)).toEqual(['b1', 'b2'])
   })
 
+  test('a category group selects all of its topics', () => {
+    const grouped = [
+      q('n1', 'tech-support', 'networking'),
+      q('s1', 'tech-support', 'databases-sql'),
+      q('h1', 'tech-support', 'hotel-systems'),
+    ]
+    expect(filterQuestions(grouped, { role: 'tech-support', category: 'technical-knowledge' }).map((x) => x.id)).toEqual([
+      'n1',
+      's1',
+    ])
+  })
+
   test('treats an empty category as any category', () => {
     expect(filterQuestions(all, { role: 'behavioral', category: '' })).toHaveLength(6)
   })

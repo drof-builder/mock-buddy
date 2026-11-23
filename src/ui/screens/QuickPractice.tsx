@@ -23,12 +23,13 @@ export function QuickPractice() {
 
   const [role, setRole] = useState<Role>('behavioral')
   const [category, setCategory] = useState('')
+  const [topic, setTopic] = useState('')
 
   // A new picker (and first question) whenever the filters or the bank change.
   const { picker, first } = useMemo(() => {
-    const p = createPicker(filterQuestions(bank.all, { role, category, hiddenIds: bank.hiddenIds }))
+    const p = createPicker(filterQuestions(bank.all, { role, category: topic || category, hiddenIds: bank.hiddenIds }))
     return { picker: p, first: p.next() }
-  }, [bank.all, bank.hiddenIds, role, category])
+  }, [bank.all, bank.hiddenIds, role, category, topic])
   const [advanced, setAdvanced] = useState<{ picker: unknown; question: Question | null } | null>(null)
   const question = advanced?.picker === picker ? advanced.question : first
 
@@ -54,11 +55,13 @@ export function QuickPractice() {
   function changeRole(r: Role) {
     setRole(r)
     setCategory('')
+    setTopic('')
     resetTake()
   }
 
   function changeCategory(c: string) {
     setCategory(c)
+    setTopic('')
     resetTake()
   }
 
@@ -110,6 +113,11 @@ export function QuickPractice() {
           categories={categoriesFor(bank.all, role)}
           onRoleChange={changeRole}
           onCategoryChange={changeCategory}
+          topic={topic}
+          onTopicChange={(t) => {
+            setTopic(t)
+            resetTake()
+          }}
         />
       )}
 

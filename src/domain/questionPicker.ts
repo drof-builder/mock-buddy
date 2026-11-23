@@ -1,3 +1,4 @@
+import { matchesCategory } from './categoryGroups'
 import { MOCK_SET_SIZE, type Question, type Role } from './types'
 
 const ROLE_QUESTIONS_IN_MOCK = 6
@@ -8,7 +9,7 @@ export function filterQuestions(
 ): Question[] {
   const hidden = new Set(opts.hiddenIds ?? [])
   return all.filter(
-    (q) => q.role === opts.role && (!opts.category || q.category === opts.category) && !hidden.has(q.id),
+    (q) => q.role === opts.role && matchesCategory(q.category, opts.category ?? '') && !hidden.has(q.id),
   )
 }
 
