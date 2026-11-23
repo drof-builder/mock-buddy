@@ -9,7 +9,7 @@ rate yourself. Everything stays on your device — no account, no server.
 ## Features
 
 - **Quick Practice** — random questions by role and category; record, play back, rate 1–5, add a note.
-- **Mock Interview** — 5 questions in a row with a 2-minute countdown each, then review and rate them all.
+- **Mock Interview** — 10 questions in a row with a 2-minute countdown each (4 behavioral + 6 role questions), then review and rate them all.
 - **History** — every practice answer and mock session, with ratings and playback.
 - **My Questions** — add your own questions and hide starter questions you don't need.
 - **Works offline** and installs to your home screen.

@@ -1,6 +1,6 @@
 import { MOCK_SET_SIZE, type Question, type Role } from './types'
 
-const ROLE_QUESTIONS_IN_MOCK = 3
+const ROLE_QUESTIONS_IN_MOCK = 6
 
 export function filterQuestions(
   all: Question[],

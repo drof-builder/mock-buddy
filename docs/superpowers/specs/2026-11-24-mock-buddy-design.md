@@ -11,7 +11,7 @@ back, and rates themselves. No AI, no accounts, no server, no running cost.
 
 **Audience:** one user (the author), on their own phone.
 **Success:** the user can open the app on their phone, practice single
-questions or a 5-question mock interview, hear themselves back, rate each
+questions or a 10-question mock interview, hear themselves back, rate each
 answer, and see past answers in a history — all offline, with data kept on
 the device.
 
@@ -53,12 +53,14 @@ charts, roles beyond the three above.
   filtered pool is exhausted; then the pool resets.
 
 ### Mock Interview
-1. Choose a role. The app builds a 5-question set:
-   - Role = Behavioral → 5 behavioral questions.
-   - Role = Technical Support or Customer Service → 2 behavioral + 3
-     role-specific questions (if the role pool has fewer than 3, fill the
-     remainder from behavioral; if the combined pool has fewer than 5, use
-     as many as exist, minimum 1).
+1. Choose a role. The app builds a 10-question set (changed from 5 on
+   2026-11-24):
+   - Role = Behavioral → 10 behavioral questions.
+   - Role = Technical Support or Customer Service → 4 behavioral + 6
+     role-specific questions (if the role pool has fewer than 6, fill the
+     remainder from behavioral; if behavioral runs short, top up from the
+     role pool; if the combined pool has fewer than 10, use as many as
+     exist, minimum 1).
    - No duplicates within the set; order: behavioral first, then role.
 2. A `MockSession` is created (`completed: false`).
 3. For each question: question text shown, **Start answer** begins
