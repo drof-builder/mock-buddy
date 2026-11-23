@@ -1,4 +1,4 @@
-import { act, screen } from '@testing-library/react'
+import { act, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { STARTER_QUESTIONS } from '../../data/starterQuestions'
@@ -22,9 +22,16 @@ async function sessionAnswers(repo: Repository) {
   return summary ? (await repo.getSession(summary.session.id))!.answers : []
 }
 
+/** Start mock stays disabled until the question bank has loaded. */
+async function readyStartButton() {
+  const button = await screen.findByRole('button', { name: 'Start mock' })
+  await waitFor(() => expect(button).toBeEnabled())
+  return button
+}
+
 async function startMock(user: ReturnType<typeof userEvent.setup>, roleLabel = 'Technical Support') {
   await user.selectOptions(await screen.findByLabelText('Role'), roleLabel)
-  await user.click(screen.getByRole('button', { name: 'Start mock' }))
+  await user.click(await readyStartButton())
   await screen.findByText('Question 1 of 5')
 }
 
@@ -130,7 +137,7 @@ describe('Mock Interview', () => {
     for (const q of STARTER_QUESTIONS.filter((x) => x.role === 'behavioral')) await repo.setStarterHidden(q.id, true)
     renderWithServices('/mock', { repo })
     await user.selectOptions(await screen.findByLabelText('Role'), 'Behavioral')
-    await user.click(screen.getByRole('button', { name: 'Start mock' }))
+    await user.click(await readyStartButton())
     expect(await screen.findByText(NO_MATCH)).toBeVisible()
     expect(await repo.listSessions()).toEqual([])
   })
@@ -169,7 +176,7 @@ describe('Mock Interview', () => {
       return real(role)
     })
     renderWithServices('/mock', { repo })
-    const start = await screen.findByRole('button', { name: 'Start mock' })
+    const start = await readyStartButton()
     await user.click(start)
     await user.click(start)
     release()
@@ -203,7 +210,7 @@ describe('Mock Interview', () => {
     const repo = createRepository(`test-${crypto.randomUUID()}`)
     vi.spyOn(repo, 'createSession').mockRejectedValue(new StorageFullError())
     renderWithServices('/mock', { repo })
-    await user.click(await screen.findByRole('button', { name: 'Start mock' }))
+    await user.click(await readyStartButton())
     expect(await screen.findByRole('alert')).toHaveTextContent(STORAGE_FULL)
     expect(screen.getByRole('button', { name: 'Start mock' })).toBeEnabled()
   })
