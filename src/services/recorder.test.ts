@@ -15,7 +15,7 @@ class FakeStream {
   }
 }
 
-let lastRecorder: FakeMediaRecorder | null = null
+const instances: FakeMediaRecorder[] = []
 let nextChunk: Blob = new Blob([new Uint8Array([1, 2, 3])], { type: 'audio/webm' })
 
 class FakeMediaRecorder {
@@ -28,7 +28,7 @@ class FakeMediaRecorder {
   constructor(stream: FakeStream, opts?: { mimeType?: string }) {
     this.stream = stream
     this.mimeType = opts?.mimeType ?? 'audio/webm'
-    lastRecorder = this
+    instances.push(this)
   }
   start() {
     this.state = 'recording'
@@ -106,7 +106,7 @@ describe('createMediaRecorder', () => {
   test('stop returns the recording with the chosen mime type', async () => {
     const r = createMediaRecorder()
     await r.start()
-    expect(lastRecorder!.mimeType).toBe('audio/webm;codecs=opus')
+    expect(instances[instances.length - 1].mimeType).toBe('audio/webm;codecs=opus')
     const rec = await r.stop()
     expect(rec.blob.size).toBe(3)
     expect(rec.mimeType).toBe('audio/webm;codecs=opus')
