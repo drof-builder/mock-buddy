@@ -18,3 +18,5 @@ export function recorderErrorMessage(code: RecorderErrorCode): string {
       return RECORDING_FAILED
   }
 }
+
+export const SAVE_FAILED = "Couldn't save the answer — try again."
