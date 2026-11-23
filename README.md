@@ -45,6 +45,9 @@ Design spec and implementation plan live in `docs/superpowers/`.
 
 ## Manual release checklist
 
+One-time setup before the first release: repo **Settings → Pages → Source:
+GitHub Actions**. Without it the deploy job fails and the live link is a 404.
+
 Run on a real phone (Android and/or iPhone) against the live app:
 
 - [ ] Microphone permission prompt appears; record, play back, and save in Quick Practice.
