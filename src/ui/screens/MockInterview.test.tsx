@@ -157,4 +157,54 @@ describe('Mock Interview', () => {
     expect(spy).toHaveBeenCalledTimes(2)
     expect(await sessionAnswers(repo)).toHaveLength(1)
   })
+
+  test('tapping Start mock twice while it is starting creates one session', async () => {
+    const user = userEvent.setup()
+    const repo = createRepository(`test-${crypto.randomUUID()}`)
+    const real = repo.createSession.bind(repo)
+    let release!: () => void
+    const gate = new Promise<void>((r) => (release = r))
+    const spy = vi.spyOn(repo, 'createSession').mockImplementation(async (role) => {
+      await gate
+      return real(role)
+    })
+    renderWithServices('/mock', { repo })
+    const start = await screen.findByRole('button', { name: 'Start mock' })
+    await user.click(start)
+    await user.click(start)
+    release()
+    await screen.findByText('Question 1 of 5')
+    expect(spy).toHaveBeenCalledTimes(1)
+    expect(await repo.listSessions()).toHaveLength(1)
+  })
+
+  test('Start answer is unavailable while the previous answer is saving', async () => {
+    const user = userEvent.setup()
+    const repo = createRepository(`test-${crypto.randomUUID()}`)
+    const real = repo.addAnswerToSession.bind(repo)
+    let release!: () => void
+    const gate = new Promise<void>((r) => (release = r))
+    vi.spyOn(repo, 'addAnswerToSession').mockImplementationOnce(async (...args) => {
+      await gate
+      return real(...args)
+    })
+    renderWithServices('/mock', { repo })
+    await startMock(user)
+    await answerOne(user)
+    expect(await screen.findByText('Saving…')).toBeVisible()
+    expect(screen.queryByRole('button', { name: 'Start answer' })).toBeNull()
+    release()
+    expect(await screen.findByText('Question 2 of 5')).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Start answer' })).toBeVisible()
+  })
+
+  test('full storage when starting the mock shows the storage message', async () => {
+    const user = userEvent.setup()
+    const repo = createRepository(`test-${crypto.randomUUID()}`)
+    vi.spyOn(repo, 'createSession').mockRejectedValue(new StorageFullError())
+    renderWithServices('/mock', { repo })
+    await user.click(await screen.findByRole('button', { name: 'Start mock' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent(STORAGE_FULL)
+    expect(screen.getByRole('button', { name: 'Start mock' })).toBeEnabled()
+  })
 })

@@ -30,21 +30,37 @@ export function MockInterview() {
   const [running, setRunning] = useState<Running | null>(null)
   const [pendingTake, setPendingTake] = useState<Recording | null>(null)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
   const savingRef = useRef(false)
+  const [starting, setStarting] = useState(false)
+  const startingRef = useRef(false)
+  const [startError, setStartError] = useState<string | null>(null)
 
   async function startMock() {
+    if (startingRef.current) return
     const questions = buildMockSet(bank.all, role, bank.hiddenIds)
     if (questions.length === 0) {
       setNoMatch(true)
       return
     }
-    const session = await repo.createSession(role)
-    setRunning({ sessionId: session.id, questions, index: 0 })
+    startingRef.current = true
+    setStarting(true)
+    setStartError(null)
+    try {
+      const session = await repo.createSession(role)
+      setRunning({ sessionId: session.id, questions, index: 0 })
+    } catch (e) {
+      setStartError(e instanceof StorageFullError ? STORAGE_FULL : SAVE_FAILED)
+    } finally {
+      startingRef.current = false
+      setStarting(false)
+    }
   }
 
   async function saveTake(take: Recording) {
     if (!running || savingRef.current) return
     savingRef.current = true
+    setSaving(true)
     setSaveError(null)
     const question = running.questions[running.index]
     try {
@@ -71,6 +87,7 @@ export function MockInterview() {
       setSaveError(e instanceof StorageFullError ? STORAGE_FULL : SAVE_FAILED)
     } finally {
       savingRef.current = false
+      setSaving(false)
     }
   }
 
@@ -98,10 +115,11 @@ export function MockInterview() {
           showCategory={false}
         />
         {noMatch && <p className="banner banner-info">{NO_MATCH}</p>}
+        {startError && <ErrorBanner message={startError} />}
         <button
           type="button"
           className="button button-primary"
-          disabled={bank.loading}
+          disabled={bank.loading || starting}
           onClick={() => void startMock()}
         >
           Start mock
@@ -126,11 +144,13 @@ export function MockInterview() {
           <ErrorBanner message={recorderErrorMessage(rec.error)} actionLabel="Try again" onAction={rec.clearError} />
         )}
 
-        {saveError && pendingTake && (
+        {saving && <p className="muted">Saving…</p>}
+
+        {saveError && pendingTake && !saving && (
           <ErrorBanner message={saveError} actionLabel="Retry save" onAction={() => void saveTake(pendingTake)} />
         )}
 
-        {!busy && !pendingTake && (
+        {!busy && !pendingTake && !saving && (
           <button type="button" className="button button-primary" onClick={() => void rec.start()}>
             Start answer
           </button>
