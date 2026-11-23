@@ -117,10 +117,10 @@ describe('Quick Practice', () => {
   test('a category with every question hidden shows the no-match message', async () => {
     const user = userEvent.setup()
     const repo = createRepository(`test-${crypto.randomUUID()}`)
-    for (const q of STARTER_QUESTIONS.filter((x) => x.category === 'intro')) await repo.setStarterHidden(q.id, true)
+    for (const q of STARTER_QUESTIONS.filter((x) => x.role === 'behavioral' && x.category === 'basic-screening')) await repo.setStarterHidden(q.id, true)
     renderWithServices('/practice', { repo })
     await shownQuestion()
-    await user.selectOptions(screen.getByLabelText('Category'), 'intro')
+    await user.selectOptions(screen.getByLabelText('Category'), 'basic-screening')
     expect(await screen.findByText(NO_MATCH)).toBeVisible()
     expect(screen.queryByRole('button', { name: 'Record' })).toBeNull()
   })

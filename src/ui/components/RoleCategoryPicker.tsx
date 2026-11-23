@@ -1,4 +1,5 @@
 import { ROLE_LABELS, ROLES, type Role } from '../../domain/types'
+import { categoryLabel, sortCategories } from '../format'
 
 interface Props {
   role: Role
@@ -7,11 +8,6 @@ interface Props {
   onRoleChange(role: Role): void
   onCategoryChange(category: string): void
   showCategory?: boolean
-}
-
-function labelFor(category: string): string {
-  const words = category.replace(/-/g, ' ')
-  return words.charAt(0).toUpperCase() + words.slice(1)
 }
 
 export function RoleCategoryPicker({ role, category, categories, onRoleChange, onCategoryChange, showCategory = true }: Props) {
@@ -32,9 +28,9 @@ export function RoleCategoryPicker({ role, category, categories, onRoleChange, o
           Category
           <select value={category} onChange={(e) => onCategoryChange(e.target.value)}>
             <option value="">Any category</option>
-            {categories.map((c) => (
+            {sortCategories(categories).map((c) => (
               <option key={c} value={c}>
-                {labelFor(c)}
+                {categoryLabel(c)}
               </option>
             ))}
           </select>
