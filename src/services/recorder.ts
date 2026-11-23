@@ -37,6 +37,11 @@ export function createMediaRecorder(): Recorder {
   let recorder: MediaRecorder | null = null
   let chunks: Blob[] = []
   let startedAt = 0
+  let starting = false
+  /** Bumped by cancel() so a start() still waiting for the mic knows to give it back. */
+  let generation = 0
+  let stopping: Promise<Recording> | null = null
+  let rejectStop: ((e: RecorderError) => void) | null = null
 
   function release() {
     stream?.getTracks().forEach((t) => t.stop())
@@ -50,32 +55,47 @@ export function createMediaRecorder(): Recorder {
 
     async start() {
       if (!isSupported()) throw new RecorderError('unsupported')
+      if (starting || recorder) throw new RecorderError('failed', 'Already recording')
+      starting = true
+      const myGeneration = ++generation
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      } catch (e) {
-        const name = (e as { name?: string }).name
-        if (name === 'NotAllowedError' || name === 'SecurityError') throw new RecorderError('permission-denied')
-        throw new RecorderError('failed')
-      }
-      const mimeType = pickMimeType((t) => MediaRecorder.isTypeSupported(t))
-      try {
-        recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined)
-        chunks = []
-        recorder.ondataavailable = (e) => {
-          if (e.data.size > 0) chunks.push(e.data)
+        let opened: MediaStream
+        try {
+          opened = await navigator.mediaDevices.getUserMedia({ audio: true })
+        } catch (e) {
+          const name = (e as { name?: string }).name
+          if (name === 'NotAllowedError' || name === 'SecurityError') throw new RecorderError('permission-denied')
+          throw new RecorderError('failed')
         }
-        recorder.start()
-        startedAt = Date.now()
-      } catch {
-        release()
-        throw new RecorderError('failed')
+        if (myGeneration !== generation) {
+          opened.getTracks().forEach((t) => t.stop())
+          throw new RecorderError('failed', 'Cancelled')
+        }
+        stream = opened
+        const mimeType = pickMimeType((t) => MediaRecorder.isTypeSupported(t))
+        try {
+          recorder = new MediaRecorder(opened, mimeType ? { mimeType } : undefined)
+          chunks = []
+          recorder.ondataavailable = (e) => {
+            if (e.data.size > 0) chunks.push(e.data)
+          }
+          recorder.start()
+          startedAt = Date.now()
+        } catch {
+          release()
+          throw new RecorderError('failed')
+        }
+      } finally {
+        starting = false
       }
     },
 
     stop() {
+      if (stopping) return stopping
       const active = recorder
       if (!active) return Promise.reject(new RecorderError('failed'))
-      return new Promise<Recording>((resolve, reject) => {
+      stopping = new Promise<Recording>((resolve, reject) => {
+        rejectStop = reject
         active.onstop = () => {
           const mimeType = active.mimeType || chunks[0]?.type || 'audio/webm'
           const blob = new Blob(chunks, { type: mimeType })
@@ -85,15 +105,21 @@ export function createMediaRecorder(): Recorder {
           else resolve({ blob, mimeType, durationSec })
         }
         active.stop()
+      }).finally(() => {
+        stopping = null
+        rejectStop = null
       })
+      return stopping
     },
 
     cancel() {
+      generation++
       if (recorder) {
         recorder.ondataavailable = null
         recorder.onstop = null
         if (recorder.state !== 'inactive') recorder.stop()
       }
+      rejectStop?.(new RecorderError('failed', 'Cancelled'))
       release()
     },
   }

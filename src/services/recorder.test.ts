@@ -35,8 +35,11 @@ class FakeMediaRecorder {
   }
   stop() {
     this.state = 'inactive'
-    this.ondataavailable?.({ data: nextChunk })
-    this.onstop?.()
+    // Real browsers fire these events asynchronously.
+    setTimeout(() => {
+      this.ondataavailable?.({ data: nextChunk })
+      this.onstop?.()
+    }, 0)
   }
 }
 
@@ -136,5 +139,45 @@ describe('createMediaRecorder', () => {
 
   test('stop without start fails with code failed', async () => {
     await expect(createMediaRecorder().stop()).rejects.toMatchObject({ code: 'failed' })
+  })
+
+  test('cancel while the microphone is still opening releases it once it opens', async () => {
+    let resolveMic!: (s: FakeStream) => void
+    vi.stubGlobal('navigator', {
+      mediaDevices: { getUserMedia: () => new Promise<FakeStream>((res) => (resolveMic = res)) },
+    })
+    const before = instances.length
+    const r = createMediaRecorder()
+    const starting = r.start()
+    r.cancel()
+    resolveMic(stream)
+    await expect(starting).rejects.toBeInstanceOf(RecorderError)
+    expect(stream.tracks.every((t) => t.stopped)).toBe(true)
+    expect(instances.length).toBe(before)
+  })
+
+  test('a second start while one is active is rejected and keeps the first stream', async () => {
+    const r = createMediaRecorder()
+    await r.start()
+    await expect(r.start()).rejects.toMatchObject({ code: 'failed' })
+    expect(stream.tracks.some((t) => t.stopped)).toBe(false)
+    const rec = await r.stop()
+    expect(rec.blob.size).toBe(3)
+  })
+
+  test('two overlapping stop calls both get the same recording', async () => {
+    const r = createMediaRecorder()
+    await r.start()
+    const [a, b] = await Promise.all([r.stop(), r.stop()])
+    expect(a).toBe(b)
+  })
+
+  test('cancel during a pending stop settles that stop', async () => {
+    const r = createMediaRecorder()
+    await r.start()
+    const stopping = r.stop()
+    r.cancel()
+    await expect(stopping).rejects.toBeInstanceOf(RecorderError)
+    expect(stream.tracks.every((t) => t.stopped)).toBe(true)
   })
 })
