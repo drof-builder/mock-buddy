@@ -32,3 +32,14 @@ test('sortCategories puts screening first, then known types, then custom ones A 
     'zebra',
   ])
 })
+
+test('categoryLabel names the fresh-grad technical support categories', () => {
+  expect(categoryLabel('databases-sql')).toBe('Databases & SQL')
+  expect(categoryLabel('hotel-systems')).toBe('Hotel systems')
+})
+
+test('sortCategories keeps the technical support topics in reading order', () => {
+  expect(
+    sortCategories(['soft-skills', 'hotel-systems', 'troubleshooting', 'databases-sql', 'technical-knowledge', 'basic-screening']),
+  ).toEqual(['basic-screening', 'technical-knowledge', 'databases-sql', 'hotel-systems', 'troubleshooting', 'soft-skills'])
+})

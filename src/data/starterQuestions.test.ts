@@ -31,7 +31,14 @@ describe('STARTER_QUESTIONS', () => {
   test('each role uses exactly its question-type categories', () => {
     const expected: Record<string, string[]> = {
       behavioral: ['basic-screening', 'past-experience', 'work-style'],
-      'tech-support': ['basic-screening', 'soft-skills', 'technical-knowledge', 'troubleshooting'],
+      'tech-support': [
+        'basic-screening',
+        'databases-sql',
+        'hotel-systems',
+        'soft-skills',
+        'technical-knowledge',
+        'troubleshooting',
+      ],
       'customer-service': ['basic-screening', 'role-play', 'situational', 'soft-skills', 'tools-metrics'],
     }
     for (const role of ROLES) {

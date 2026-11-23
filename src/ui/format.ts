@@ -13,6 +13,8 @@ const CATEGORY_LABELS: Record<string, string> = {
   'past-experience': 'Past experience (STAR)',
   'work-style': 'Work style',
   'technical-knowledge': 'Technical knowledge',
+  'databases-sql': 'Databases & SQL',
+  'hotel-systems': 'Hotel systems',
   troubleshooting: 'Troubleshooting',
   situational: 'Situational',
   'role-play': 'Role-play',

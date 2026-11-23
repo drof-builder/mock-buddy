@@ -142,7 +142,7 @@ Repository functions (e.g. `saveAnswer`, `listQuickAnswers`,
 context so tests can use `fake-indexeddb`.
 
 ### Starter questions
-`src/data/questions.json`: 98 entries, each
+`src/data/questions.json`: 132 entries, each
 `{ id, role, category, text }`. IDs are stable strings (e.g. `beh-001`,
 `ts-001`, `cs-001`). Adding a role later = add a value to the `Role` type
 and entries to the JSON.
@@ -151,7 +151,9 @@ Roles: `behavioral`, `tech-support`, `customer-service`.
 Categories are question types (changed 2026-11-24 from topic categories),
 each with at least 6 questions — behavioral: basic-screening,
 past-experience, work-style; tech-support: basic-screening,
-technical-knowledge, troubleshooting, soft-skills; customer-service:
+technical-knowledge, databases-sql, hotel-systems, troubleshooting,
+soft-skills (databases-sql and hotel-systems added 2026-11-24 from the
+fresh-graduate hospitality-tech research set); customer-service:
 basic-screening, situational, role-play, tools-metrics, soft-skills.
 Display names and order live in `src/ui/format.ts`. Question ids never
 change (hidden-question settings depend on them).
