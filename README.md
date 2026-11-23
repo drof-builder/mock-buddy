@@ -4,7 +4,7 @@ A personal, mobile-first web app for practicing job interviews. Pick a
 question, answer it out loud while the app records audio, play it back, and
 rate yourself. Everything stays on your device — no account, no server.
 
-**Live app:** hosted on Vercel — the address is shown on the project's Vercel dashboard (`https://<project>.vercel.app`).
+**Live app:** https://mock-buddy-pi.vercel.app/
 
 ## Features
 
