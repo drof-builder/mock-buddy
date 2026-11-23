@@ -4,7 +4,7 @@ A personal, mobile-first web app for practicing job interviews. Pick a
 question, answer it out loud while the app records audio, play it back, and
 rate yourself. Everything stays on your device — no account, no server.
 
-**Live app:** https://drof-builder.github.io/mock-buddy/
+**Live app:** hosted on Vercel — the address is shown on the project's Vercel dashboard (`https://<project>.vercel.app`).
 
 ## Features
 
@@ -28,7 +28,7 @@ about a week of not visiting it, but not for apps added to the home screen.
 
 ```bash
 npm install
-npm run dev        # http://localhost:5173/mock-buddy/
+npm run dev        # http://localhost:5173/
 npm test           # run the test suite
 npm run lint       # oxlint
 npm run typecheck
@@ -38,15 +38,17 @@ npm run build      # production build in dist/
 The microphone only works on `https://` or `localhost`, so test recording on a
 phone using the deployed app.
 
-Every push to `main` runs CI and deploys to GitHub Pages
-(repo Settings → Pages → Source: **GitHub Actions**).
+GitHub Actions runs lint, typecheck, tests and build on every PR and push.
+Vercel deploys the app: every push to `main` updates the live site, and every
+PR gets its own preview link (handy for testing on a phone before merging).
 
 Design spec and implementation plan live in `docs/superpowers/`.
 
 ## Manual release checklist
 
-One-time setup before the first release: repo **Settings → Pages → Source:
-GitHub Actions**. Without it the deploy job fails and the live link is a 404.
+One-time setup: sign in at [vercel.com](https://vercel.com) with GitHub →
+**Add New → Project** → import `drof-builder/mock-buddy`. Vercel detects Vite
+(build `npm run build`, output `dist`) — keep the defaults and deploy.
 
 Run on a real phone (Android and/or iPhone) against the live app:
 

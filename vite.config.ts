@@ -4,7 +4,6 @@ import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
-  base: '/mock-buddy/',
   plugins: [
     react(),
     VitePWA({
@@ -17,8 +16,8 @@ export default defineConfig({
         theme_color: '#4f46e5',
         background_color: '#f7f7fb',
         display: 'standalone',
-        start_url: '/mock-buddy/',
-        scope: '/mock-buddy/',
+        start_url: '/',
+        scope: '/',
         icons: [
           { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
