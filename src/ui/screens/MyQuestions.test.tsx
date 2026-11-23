@@ -88,10 +88,28 @@ describe('My Questions', () => {
     const { services } = renderWithServices('/questions')
     const first = STARTER_QUESTIONS[0]
     const item = (await screen.findByText(first.text)).closest('li')!
-    await user.click(within(item).getByRole('button', { name: 'Hide' }))
-    await waitFor(async () => expect((await services.repo.getSettings()).hiddenStarterIds).toEqual([first.id]))
-    await user.click(within(item).getByRole('button', { name: 'Show' }))
+    const hide = within(item).getByRole('button', { name: 'Hide' })
+    await waitFor(() => expect(hide).toBeEnabled())
+    await user.click(hide)
+    await user.click(await within(item).findByRole('button', { name: 'Show' }))
+    expect(await within(item).findByRole('button', { name: 'Hide' })).toBeInTheDocument()
     await waitFor(async () => expect((await services.repo.getSettings()).hiddenStarterIds).toEqual([]))
+  })
+
+  test('starter toggles wait until saved settings have loaded', async () => {
+    const repo = createRepository(`test-${crypto.randomUUID()}`)
+    let release!: () => void
+    const gate = new Promise<void>((r) => (release = r))
+    const real = repo.getSettings.bind(repo)
+    vi.spyOn(repo, 'getSettings').mockImplementation(async () => {
+      await gate
+      return real()
+    })
+    renderWithServices('/questions', { repo })
+    const item = (await screen.findByText(STARTER_QUESTIONS[0].text)).closest('li')!
+    expect(within(item).getByRole('button', { name: 'Hide' })).toBeDisabled()
+    release()
+    await waitFor(() => expect(within(item).getByRole('button', { name: 'Hide' })).toBeEnabled())
   })
 
   test('a custom question shows up in Quick Practice', async () => {

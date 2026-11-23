@@ -197,7 +197,12 @@ export function MyQuestions() {
                 return (
                   <li key={q.id} className={`starter-item${isHidden ? ' starter-hidden' : ''}`}>
                     <span>{q.text}</span>
-                    <button type="button" className="button" onClick={() => void toggleHidden(q.id)}>
+                    <button
+                      type="button"
+                      className="button"
+                      disabled={custom === null}
+                      onClick={() => void toggleHidden(q.id)}
+                    >
                       {isHidden ? 'Show' : 'Hide'}
                     </button>
                   </li>
