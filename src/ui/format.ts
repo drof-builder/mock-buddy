@@ -12,6 +12,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   'basic-screening': 'Basic / screening',
   'past-experience': 'Past experience (STAR)',
   'work-style': 'Work style',
+  'technical-knowledge': 'Technical knowledge',
   networking: 'Networking',
   'windows-ad': 'Windows & Active Directory',
   'computer-basics-security': 'Computer basics & security',
