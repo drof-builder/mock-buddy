@@ -20,3 +20,4 @@ export function recorderErrorMessage(code: RecorderErrorCode): string {
 }
 
 export const SAVE_FAILED = "Couldn't save the answer — try again."
+export const DELETE_FAILED = "Couldn't delete — try again."

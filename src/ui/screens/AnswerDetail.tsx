@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import type { Answer, Rating } from '../../domain/types'
+import { StorageFullError } from '../../services/db'
 import { AudioPlayer } from '../components/AudioPlayer'
+import { ErrorBanner } from '../components/ErrorBanner'
 import { PageHeader } from '../components/PageHeader'
 import { RatingInput } from '../components/RatingInput'
 import { formatClock, formatDate } from '../format'
+import { DELETE_FAILED, SAVE_FAILED, STORAGE_FULL } from '../messages'
 import { useServices } from '../services'
 
 type Loaded = { status: 'loading' } | { status: 'missing' } | { status: 'ready'; answer: Answer }
@@ -17,6 +20,7 @@ export function AnswerDetail() {
   const [rating, setRating] = useState<Rating | undefined>()
   const [note, setNote] = useState('')
   const [saved, setSaved] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let live = true
@@ -49,14 +53,24 @@ export function AnswerDetail() {
   const backTo = answer.mode === 'mock' ? '/history?tab=mock' : '/history'
 
   async function save() {
-    await repo.updateAnswer(answer.id, { rating, note: note.trim() || undefined })
-    setSaved(true)
+    setError(null)
+    try {
+      await repo.updateAnswer(answer.id, { rating, note: note.trim() || undefined })
+      setSaved(true)
+    } catch (e) {
+      setError(e instanceof StorageFullError ? STORAGE_FULL : SAVE_FAILED)
+    }
   }
 
   async function remove() {
     if (!window.confirm('Delete this answer?')) return
-    await repo.deleteAnswer(answer.id)
-    navigate(backTo)
+    setError(null)
+    try {
+      await repo.deleteAnswer(answer.id)
+      navigate(backTo)
+    } catch {
+      setError(DELETE_FAILED)
+    }
   }
 
   return (
@@ -87,6 +101,7 @@ export function AnswerDetail() {
           />
         </label>
         {saved && <p role="status">Saved.</p>}
+        {error && <ErrorBanner message={error} />}
         <div className="row">
           <button type="button" className="button button-primary grow" onClick={() => void save()}>
             Save changes

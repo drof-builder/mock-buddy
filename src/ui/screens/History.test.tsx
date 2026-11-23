@@ -2,10 +2,10 @@ import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import type { Answer } from '../../domain/types'
-import { createRepository, type Repository } from '../../services/db'
+import { createRepository, StorageFullError, type Repository } from '../../services/db'
 import { createFakeStorage } from '../../test/fakeStorage'
 import { renderWithServices } from '../../test/renderWithServices'
-import { INSTALL_HINT } from '../messages'
+import { DELETE_FAILED, INSTALL_HINT, STORAGE_FULL } from '../messages'
 
 function answer(overrides: Partial<Answer>): Answer {
   return {
@@ -104,6 +104,28 @@ describe('Answer detail', () => {
     renderWithServices('/history/answer/a1', { repo })
     await user.click(await screen.findByRole('button', { name: 'Delete' }))
     expect(await repo.getAnswer('a1')).toBeDefined()
+    expect(screen.getByRole('button', { name: 'Delete' })).toBeVisible()
+  })
+
+  test('full storage on save shows the storage message instead of failing silently', async () => {
+    const user = userEvent.setup()
+    const repo = await seededRepo(answer({ id: 'a1' }))
+    vi.spyOn(repo, 'updateAnswer').mockRejectedValue(new StorageFullError())
+    renderWithServices('/history/answer/a1', { repo })
+    await user.click(await screen.findByRole('button', { name: 'Rate 3 out of 5' }))
+    await user.click(screen.getByRole('button', { name: 'Save changes' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent(STORAGE_FULL)
+    expect(screen.queryByText('Saved.')).toBeNull()
+  })
+
+  test('a failed delete says so and stays on the answer', async () => {
+    const user = userEvent.setup()
+    vi.spyOn(window, 'confirm').mockReturnValue(true)
+    const repo = await seededRepo(answer({ id: 'a1' }))
+    vi.spyOn(repo, 'deleteAnswer').mockRejectedValue(new Error('boom'))
+    renderWithServices('/history/answer/a1', { repo })
+    await user.click(await screen.findByRole('button', { name: 'Delete' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent(DELETE_FAILED)
     expect(screen.getByRole('button', { name: 'Delete' })).toBeVisible()
   })
 
