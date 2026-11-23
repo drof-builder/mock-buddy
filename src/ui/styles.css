@@ -138,3 +138,47 @@ textarea {
   background: var(--surface);
   color: var(--text);
 }
+
+.banner-text {
+  margin: 0 0 8px;
+}
+
+.banner-text:last-child {
+  margin-bottom: 0;
+}
+
+.timer {
+  font-size: 2.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.audio {
+  width: 100%;
+}
+
+.rating {
+  display: flex;
+  gap: 4px;
+}
+
+.rating-star {
+  min-width: 48px;
+  min-height: 48px;
+  font-size: 1.6rem;
+  border: none;
+  background: none;
+  color: var(--border);
+  cursor: pointer;
+}
+
+.rating-star-on {
+  color: #f5a524;
+}
+
+.question {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
