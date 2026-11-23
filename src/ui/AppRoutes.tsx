@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router'
 import { AnswerDetail } from './screens/AnswerDetail'
 import { History } from './screens/History'
 import { Home } from './screens/Home'
+import { MockInterview } from './screens/MockInterview'
 import { QuickPractice } from './screens/QuickPractice'
 import { useServices } from './services'
 
@@ -25,7 +26,7 @@ export function AppRoutes() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/practice" element={<QuickPractice />} />
-      <Route path="/mock" element={<Placeholder title="Mock Interview" />} />
+      <Route path="/mock" element={<MockInterview />} />
       <Route path="/mock/:sessionId/review" element={<Placeholder title="Review" />} />
       <Route path="/history" element={<History />} />
       <Route path="/history/answer/:answerId" element={<AnswerDetail />} />

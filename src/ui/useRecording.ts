@@ -16,6 +16,13 @@ export interface UseRecording {
 
 const TICK_MS = 250
 
+export interface RecordingOptions {
+  /** Stop automatically once this many seconds have passed. */
+  maxSec?: number
+  /** Receives the recording when it was stopped by the time limit. */
+  onAutoStop?(recording: Recording): void
+}
+
 function errorCode(e: unknown): RecorderErrorCode {
   return e instanceof RecorderError ? e.code : 'failed'
 }
@@ -25,7 +32,8 @@ function errorCode(e: unknown): RecorderErrorCode {
  * timestamp (not by counting ticks), so it stays right when the browser
  * throttles timers in a background tab.
  */
-export function useRecording(): UseRecording {
+export function useRecording(options: RecordingOptions = {}): UseRecording {
+  const { maxSec } = options
   const { recorder } = useServices()
   const [status, setStatusState] = useState<RecordingStatus>('idle')
   // The ref is read synchronously so double taps see the latest status.
@@ -35,17 +43,15 @@ export function useRecording(): UseRecording {
   const [startedAt, setStartedAt] = useState<number | null>(null)
   const [now, setNow] = useState(() => Date.now())
   const [error, setError] = useState<RecorderErrorCode | null>(null)
+  const onAutoStopRef = useRef(options.onAutoStop)
+  useEffect(() => {
+    onAutoStopRef.current = options.onAutoStop
+  })
 
   const setStatus = useCallback((s: RecordingStatus) => {
     statusRef.current = s
     setStatusState(s)
   }, [])
-
-  useEffect(() => {
-    if (status !== 'recording') return
-    const id = setInterval(() => setNow(Date.now()), TICK_MS)
-    return () => clearInterval(id)
-  }, [status])
 
   useEffect(() => {
     if (status !== 'recording') return
@@ -97,6 +103,21 @@ export function useRecording(): UseRecording {
       }
     }
   }, [recorder, setStatus])
+
+  // Refresh the clock while recording, and stop at the time limit if one is set.
+  useEffect(() => {
+    if (status !== 'recording' || startedAt === null) return
+    const id = setInterval(() => {
+      const t = Date.now()
+      setNow(t)
+      if (maxSec !== undefined && t - startedAt >= maxSec * 1000) {
+        void stop().then((rec) => {
+          if (rec) onAutoStopRef.current?.(rec)
+        })
+      }
+    }, TICK_MS)
+    return () => clearInterval(id)
+  }, [status, startedAt, maxSec, stop])
 
   const cancel = useCallback(() => {
     if (statusRef.current === 'idle') return
