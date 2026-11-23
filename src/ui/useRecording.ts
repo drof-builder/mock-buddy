@@ -16,6 +16,13 @@ export interface UseRecording {
 
 const TICK_MS = 250
 
+export interface RecordingOptions {
+  /** Stop automatically once this many seconds have passed. */
+  maxSec?: number
+  /** Receives the recording when it was stopped by the time limit. */
+  onAutoStop?(recording: Recording): void
+}
+
 function errorCode(e: unknown): RecorderErrorCode {
   return e instanceof RecorderError ? e.code : 'failed'
 }
@@ -25,25 +32,26 @@ function errorCode(e: unknown): RecorderErrorCode {
  * timestamp (not by counting ticks), so it stays right when the browser
  * throttles timers in a background tab.
  */
-export function useRecording(): UseRecording {
+export function useRecording(options: RecordingOptions = {}): UseRecording {
+  const { maxSec } = options
   const { recorder } = useServices()
   const [status, setStatusState] = useState<RecordingStatus>('idle')
   // The ref is read synchronously so double taps see the latest status.
   const statusRef = useRef<RecordingStatus>('idle')
+  // Bumped by cancel(); a start/stop from an older attempt then stays quiet.
+  const attemptRef = useRef(0)
   const [startedAt, setStartedAt] = useState<number | null>(null)
   const [now, setNow] = useState(() => Date.now())
   const [error, setError] = useState<RecorderErrorCode | null>(null)
+  const onAutoStopRef = useRef(options.onAutoStop)
+  useEffect(() => {
+    onAutoStopRef.current = options.onAutoStop
+  })
 
   const setStatus = useCallback((s: RecordingStatus) => {
     statusRef.current = s
     setStatusState(s)
   }, [])
-
-  useEffect(() => {
-    if (status !== 'recording') return
-    const id = setInterval(() => setNow(Date.now()), TICK_MS)
-    return () => clearInterval(id)
-  }, [status])
 
   useEffect(() => {
     if (status !== 'recording') return
@@ -64,13 +72,16 @@ export function useRecording(): UseRecording {
     if (statusRef.current !== 'idle') return
     setStatus('starting')
     setError(null)
+    const attempt = attemptRef.current
     try {
       await recorder.start()
+      if (attempt !== attemptRef.current) return
       const t = Date.now()
       setStartedAt(t)
       setNow(t)
       setStatus('recording')
     } catch (e) {
+      if (attempt !== attemptRef.current) return
       setError(errorCode(e))
       setStatus('idle')
     }
@@ -79,19 +90,38 @@ export function useRecording(): UseRecording {
   const stop = useCallback(async (): Promise<Recording | null> => {
     if (statusRef.current !== 'recording') return null
     setStatus('stopping')
+    const attempt = attemptRef.current
     try {
       return await recorder.stop()
     } catch (e) {
-      setError(errorCode(e))
+      if (attempt === attemptRef.current) setError(errorCode(e))
       return null
     } finally {
-      setStartedAt(null)
-      setStatus('idle')
+      if (attempt === attemptRef.current) {
+        setStartedAt(null)
+        setStatus('idle')
+      }
     }
   }, [recorder, setStatus])
 
+  // Refresh the clock while recording, and stop at the time limit if one is set.
+  useEffect(() => {
+    if (status !== 'recording' || startedAt === null) return
+    const id = setInterval(() => {
+      const t = Date.now()
+      setNow(t)
+      if (maxSec !== undefined && t - startedAt >= maxSec * 1000) {
+        void stop().then((rec) => {
+          if (rec) onAutoStopRef.current?.(rec)
+        })
+      }
+    }, TICK_MS)
+    return () => clearInterval(id)
+  }, [status, startedAt, maxSec, stop])
+
   const cancel = useCallback(() => {
     if (statusRef.current === 'idle') return
+    attemptRef.current++
     recorder.cancel()
     setStartedAt(null)
     setStatus('idle')

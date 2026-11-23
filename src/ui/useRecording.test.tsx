@@ -7,12 +7,12 @@ import { createFakeStorage } from '../test/fakeStorage'
 import { ServicesProvider } from './services'
 import { useRecording } from './useRecording'
 
-function setup(recorder: FakeRecorder = createFakeRecorder()) {
+function setup(recorder: FakeRecorder = createFakeRecorder(), options?: Parameters<typeof useRecording>[0]) {
   const services = { recorder, repo: createRepository(`t-${crypto.randomUUID()}`), storage: createFakeStorage() }
   const wrapper = ({ children }: { children: ReactNode }) => (
     <ServicesProvider services={services}>{children}</ServicesProvider>
   )
-  return { recorder, ...renderHook(() => useRecording(), { wrapper }) }
+  return { recorder, ...renderHook(() => useRecording(options), { wrapper }) }
 }
 
 beforeEach(() => {
@@ -102,5 +102,47 @@ describe('useRecording', () => {
     const after = new Event('beforeunload', { cancelable: true })
     window.dispatchEvent(after)
     expect(after.defaultPrevented).toBe(false)
+  })
+
+  test('unmounting while the microphone is still opening cancels the recorder', async () => {
+    const { result, recorder, unmount } = setup(createFakeRecorder({ deferStart: true }))
+    act(() => {
+      void result.current.start()
+    })
+    expect(result.current.status).toBe('starting')
+    unmount()
+    expect(recorder.cancelCalls).toBe(1)
+  })
+
+  test('cancelling while the microphone is opening does not report an error', async () => {
+    const { result, recorder } = setup(createFakeRecorder({ deferStart: true }))
+    let starting: Promise<void> = Promise.resolve()
+    act(() => {
+      starting = result.current.start()
+    })
+    act(() => result.current.cancel())
+    await act(async () => {
+      recorder.finishStart()
+      await starting
+    })
+    expect(result.current.error).toBeNull()
+    expect(result.current.status).toBe('idle')
+  })
+
+  test('stops by itself at the time limit and hands over the recording once', async () => {
+    const onAutoStop = vi.fn()
+    const { result, recorder } = setup(createFakeRecorder(), { maxSec: 120, onAutoStop })
+    await act(() => result.current.start())
+    await act(async () => {
+      vi.advanceTimersByTime(119_000)
+    })
+    expect(onAutoStop).not.toHaveBeenCalled()
+    await act(async () => {
+      vi.advanceTimersByTime(300_000)
+    })
+    expect(recorder.stopCalls).toBe(1)
+    expect(onAutoStop).toHaveBeenCalledTimes(1)
+    expect(onAutoStop.mock.calls[0][0].blob.size).toBe(3)
+    expect(result.current.status).toBe('idle')
   })
 })
