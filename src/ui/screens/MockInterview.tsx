@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { buildMockSet } from '../../domain/questionPicker'
-import { MOCK_ANSWER_SECONDS, type Question, type Role } from '../../domain/types'
+import { MOCK_ANSWER_SECONDS, MOCK_SET_SIZE, type Question, type Role } from '../../domain/types'
 import { StorageFullError } from '../../services/db'
 import type { Recording } from '../../services/recorder'
 import { ErrorBanner } from '../components/ErrorBanner'
@@ -101,7 +101,8 @@ export function MockInterview() {
       <main className="page stack">
         <PageHeader title="Mock Interview" />
         <p className="muted">
-          Five questions in a row, up to 2 minutes each. You'll review and rate them at the end.
+          {MOCK_SET_SIZE} questions in a row, up to 2 minutes each (about 20 minutes). You'll review and rate them
+          at the end.
         </p>
         <RoleCategoryPicker
           role={role}

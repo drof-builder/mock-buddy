@@ -49,5 +49,5 @@ export interface Settings {
   hiddenStarterIds: string[]
 }
 
-export const MOCK_SET_SIZE = 5
+export const MOCK_SET_SIZE = 10
 export const MOCK_ANSWER_SECONDS = 120

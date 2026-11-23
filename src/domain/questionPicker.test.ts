@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { buildMockSet, categoriesFor, createPicker, filterQuestions } from './questionPicker'
-import type { Question, Role } from './types'
+import { STARTER_QUESTIONS } from '../data/starterQuestions'
+import { ROLES, type Question, type Role } from './types'
 
 function q(id: string, role: Role, category: string): Question {
   return { id, role, category, text: `Question ${id}`, source: 'starter' }
@@ -81,35 +82,57 @@ describe('createPicker', () => {
 })
 
 describe('buildMockSet', () => {
-  test('behavioral mock is five behavioral questions', () => {
-    const set = buildMockSet(all, 'behavioral', [])
-    expect(set).toHaveLength(5)
+  function many(prefix: string, role: Role, n: number): Question[] {
+    return Array.from({ length: n }, (_, k) => q(`${prefix}${k + 1}`, role, 'any'))
+  }
+  const beh = many('b', 'behavioral', 20)
+  const ts = many('t', 'tech-support', 20)
+  const big = [...beh, ...ts, ...many('c', 'customer-service', 3)]
+  const roles = (set: Question[]) => set.map((x) => x.role)
+
+  test('a behavioral mock is ten behavioral questions', () => {
+    const set = buildMockSet(big, 'behavioral', [])
+    expect(set).toHaveLength(10)
     expect(set.every((x) => x.role === 'behavioral')).toBe(true)
   })
 
-  test('role mock is two behavioral then three role questions', () => {
-    const set = buildMockSet(all, 'tech-support', [])
-    expect(set.map((x) => x.role)).toEqual(['behavioral', 'behavioral', 'tech-support', 'tech-support', 'tech-support'])
+  test('a role mock is four behavioral then six role questions', () => {
+    expect(roles(buildMockSet(big, 'tech-support', []))).toEqual([
+      ...Array(4).fill('behavioral'),
+      ...Array(6).fill('tech-support'),
+    ])
+  })
+
+  test('never repeats a question', () => {
+    const set = buildMockSet(big, 'tech-support', [])
+    expect(new Set(set.map((x) => x.id)).size).toBe(10)
   })
 
   test('fills from behavioral when the role pool is small', () => {
-    const set = buildMockSet(all, 'customer-service', [])
-    expect(set.map((x) => x.role)).toEqual(['behavioral', 'behavioral', 'behavioral', 'behavioral', 'customer-service'])
-    expect(new Set(set.map((x) => x.id)).size).toBe(5)
+    expect(roles(buildMockSet(big, 'customer-service', []))).toEqual([
+      ...Array(7).fill('behavioral'),
+      ...Array(3).fill('customer-service'),
+    ])
   })
 
-  test('uses what exists when fewer than five questions are available', () => {
+  test('fills from the role pool when behavioral questions run out', () => {
+    const hidden = beh.slice(2).map((x) => x.id)
+    expect(roles(buildMockSet(big, 'tech-support', hidden))).toEqual([
+      ...Array(2).fill('behavioral'),
+      ...Array(8).fill('tech-support'),
+    ])
+  })
+
+  test('uses what exists when fewer than ten questions are available', () => {
     const small = [q('b1', 'behavioral', 'x'), q('t1', 'tech-support', 'y')]
     expect(buildMockSet(small, 'tech-support', [])).toHaveLength(2)
   })
 
-  test('fills from the role pool when behavioral questions run out', () => {
-    const hidden = behavioral.map((x) => x.id)
-    const set = buildMockSet(all, 'tech-support', hidden)
-    expect(set.map((x) => x.role)).toEqual(['tech-support', 'tech-support', 'tech-support', 'tech-support'])
+  test('returns an empty set when everything is hidden', () => {
+    expect(buildMockSet(big, 'behavioral', beh.map((x) => x.id))).toEqual([])
   })
 
-  test('returns an empty set when everything is hidden', () => {
-    expect(buildMockSet(all, 'behavioral', behavioral.map((x) => x.id))).toEqual([])
+  test('the real starter questions give a full ten-question mock for every role', () => {
+    for (const role of ROLES) expect(buildMockSet(STARTER_QUESTIONS, role, [])).toHaveLength(10)
   })
 })
