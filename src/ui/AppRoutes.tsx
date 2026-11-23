@@ -4,6 +4,7 @@ import { AnswerDetail } from './screens/AnswerDetail'
 import { History } from './screens/History'
 import { Home } from './screens/Home'
 import { MockInterview } from './screens/MockInterview'
+import { MockReview } from './screens/MockReview'
 import { QuickPractice } from './screens/QuickPractice'
 import { useServices } from './services'
 
@@ -27,7 +28,7 @@ export function AppRoutes() {
       <Route path="/" element={<Home />} />
       <Route path="/practice" element={<QuickPractice />} />
       <Route path="/mock" element={<MockInterview />} />
-      <Route path="/mock/:sessionId/review" element={<Placeholder title="Review" />} />
+      <Route path="/mock/:sessionId/review" element={<MockReview />} />
       <Route path="/history" element={<History />} />
       <Route path="/history/answer/:answerId" element={<AnswerDetail />} />
       <Route path="/questions" element={<Placeholder title="My Questions" />} />

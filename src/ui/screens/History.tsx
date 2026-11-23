@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
-import type { AnswerSummary } from '../../domain/types'
+import { formatAverage } from '../../domain/ratings'
+import { ROLE_LABELS, type AnswerSummary } from '../../domain/types'
+import type { SessionSummary } from '../../services/db'
 import { formatBytes } from '../../services/storage'
 import { PageHeader } from '../components/PageHeader'
 import { formatClock, formatDate } from '../format'
@@ -43,7 +45,39 @@ function PracticeList() {
 }
 
 function MockList() {
-  return <p className="muted">No mock interviews yet.</p>
+  const { repo } = useServices()
+  const [sessions, setSessions] = useState<SessionSummary[] | null>(null)
+
+  useEffect(() => {
+    let live = true
+    void repo.listSessions().then((list) => {
+      if (live) setSessions(list)
+    })
+    return () => {
+      live = false
+    }
+  }, [repo])
+
+  if (!sessions) return <p className="muted">Loading…</p>
+  if (sessions.length === 0) return <p className="muted">No mock interviews yet.</p>
+
+  return (
+    <ul className="list">
+      {sessions.map(({ session, averageRating }) => (
+        <li key={session.id}>
+          <Link className="list-item" to={`/mock/${session.id}/review`}>
+            <span className="list-title">
+              {ROLE_LABELS[session.role]}
+              {!session.completed && <span className="badge">Unfinished</span>}
+            </span>
+            <span className="muted">
+              {formatDate(session.createdAt)} · {session.answerIds.length} answers · Avg {formatAverage(averageRating)}
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  )
 }
 
 function StorageFooter() {
