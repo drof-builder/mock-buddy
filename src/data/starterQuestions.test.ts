@@ -31,7 +31,16 @@ describe('STARTER_QUESTIONS', () => {
   test('each role uses exactly its question-type categories', () => {
     const expected: Record<string, string[]> = {
       behavioral: ['basic-screening', 'past-experience', 'work-style'],
-      'tech-support': ['basic-screening', 'soft-skills', 'technical-knowledge', 'troubleshooting'],
+      'tech-support': [
+        'basic-screening',
+        'computer-basics-security',
+        'databases-sql',
+        'hotel-systems',
+        'networking',
+        'soft-skills',
+        'troubleshooting',
+        'windows-ad',
+      ],
       'customer-service': ['basic-screening', 'role-play', 'situational', 'soft-skills', 'tools-metrics'],
     }
     for (const role of ROLES) {
@@ -55,11 +64,29 @@ describe('STARTER_QUESTIONS', () => {
     }
   })
 
-  test('questions that existed before keep their ids', () => {
+  // Retired on purpose: assumed real support-job experience (replaced by ts-067 for beginners).
+  const RETIRED = ['ts-018']
+
+  test('questions that existed before keep their ids, except retired ones', () => {
     const ids = new Set(STARTER_QUESTIONS.map((q) => q.id))
     for (let i = 1; i <= 25; i++) {
       const n = String(i).padStart(3, '0')
-      for (const prefix of ['beh', 'ts', 'cs']) expect(ids.has(`${prefix}-${n}`)).toBe(true)
+      for (const prefix of ['beh', 'ts', 'cs']) {
+        const id = `${prefix}-${n}`
+        if (!RETIRED.includes(id)) expect(ids.has(id)).toBe(true)
+      }
     }
+    for (const id of RETIRED) expect(ids.has(id)).toBe(false)
+  })
+
+  test('technical support questions do not assume a past support job', () => {
+    const texts = STARTER_QUESTIONS.filter((q) => q.role === 'tech-support').map((q) => q.text)
+    expect(texts).toContain(
+      'Have you used any ticketing or helpdesk tools, such as Zendesk or Jira? If not, how would you get up to speed on one?',
+    )
+    expect(texts).toContain('How long would you work on an issue before escalating it?')
+    expect(texts).toContain(
+      'Tell me about the hardest technical problem you have solved, at school, at home, or in a project.',
+    )
   })
 })

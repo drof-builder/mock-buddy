@@ -1,11 +1,11 @@
-# Interview Question Bank — Tech Support & Customer Service
+# Interview Question Bank — Tech Support, Customer Service & Hospitality Tech Implementation
 
 Gathered 2026-11-24 from candidate-reported interviews (Glassdoor) and hiring/prep guides
 (Indeed, Coursera, The Muse, Adaface, Jitbit, CourseCareers, startup.jobs, MockQuestions, etc.).
 Reddit is blocked for the web-search tool, so Reddit threads were read separately in a browser —
 see **Section 4** for questions Redditors said they were asked.
 
-Tags: **[R]** = reported by candidates as actually asked (Glassdoor/Prepfully) · **[G]** = from hiring/prep guides · **[Reddit]** = reported on Reddit (Section 4)
+Tags: **[R]** = reported by candidates as actually asked (Glassdoor/Prepfully) · **[G]** = from hiring/prep guides · **[Reddit]** = reported on Reddit (Section 4) · **[JD]** = written from the job description + vendor docs (Section 5)
 
 ---
 
@@ -182,6 +182,199 @@ is flexible, and spots opportunities on the call.
 
 ---
 
+## 5. Hospitality Technology — Implementation & Support Engineer (OPERA / hotel PMS)
+
+Target job description: install/configure/test/troubleshoot enterprise hospitality tech; implementations,
+integrations, go-lives; app/server/connectivity/integration issues; third-party interfaces & vendors;
+end-user training; technical documentation. Wants Windows Server, networking, databases/SQL, OPERA or other PMS.
+
+No public bank of OPERA-specific interview questions turned up (searched Glassdoor, prep sites, job posts).
+Questions below combine: candidate-reported questions from **adjacent roles** (Oracle support, application support,
+implementation) **[R]**, prep guides **[G]**, and questions built from this job description + Oracle OPERA docs **[JD]**.
+
+### 5.1 Windows Server
+1. Which Windows Server versions have you worked with? What roles/features have you installed (IIS, AD DS, DNS, DHCP, File Services)? [R]
+2. An application service on a server won't start. How do you troubleshoot it? (services.msc, service account/password, dependencies, Event Viewer → Application/System logs) [G]
+3. How do you use Event Viewer? Which logs would you check first? [G]
+4. Users get "500 Internal Server Error" from a web app hosted on IIS. Where do you look? (IIS logs, app pool stopped/identity, Event Viewer, recent changes) [R]
+5. What is an IIS application pool and why would you recycle one? [R]
+6. A server is running slowly / CPU at 100%. Steps? (Task Manager / Resource Monitor / PerfMon, which process, disk space, memory) [G]
+7. How do you check disk space and what do you do if the server's C: drive is full? [G]
+8. How do you connect to and manage servers remotely? (RDP, PowerShell, remote tools) [G]
+9. What is a service account and why shouldn't apps run as a personal admin account? [JD]
+10. How do you apply Windows updates/patches to a production server without disrupting a 24/7 hotel? [JD]
+11. What is the difference between a physical server, a VM, and cloud hosting? [G]
+12. Basic Active Directory: create a user, reset a password, add to a group, what is Group Policy? [R]
+13. How would you schedule a recurring task/script on a server? (Task Scheduler) [G]
+14. What would you check after a server reboot to confirm the application is healthy? [JD]
+
+### 5.2 Networking & connectivity
+15. Explain DNS, DHCP, static vs dynamic IP, subnet mask, default gateway. [R]
+16. Difference between TCP and UDP? [R]
+17. A workstation can't reach the application server. Walk me through it. (ping, nslookup, tracert, telnet / Test-NetConnection to the port, firewall) [G]
+18. How do you test whether a specific port is open between two systems? (Test-NetConnection -Port, telnet) [JD]
+19. What is a firewall rule, and how would you know one is blocking an interface? [JD]
+20. What are VLANs and why do hotels separate guest Wi-Fi, POS, and back-office networks? [JD]
+21. What is a VPN / site-to-site VPN? How do vendors usually connect to support a property? [JD]
+22. What is a digital/SSL certificate? What happens when one expires? [R]
+23. Common ports: 80, 443, 1433 (SQL Server), 1521 (Oracle DB), 3389 (RDP), 22, 21/SFTP. [G]
+24. Difference between a switch, a router, and a firewall? [G]
+
+### 5.3 Databases & SQL
+25. What is a database, table, primary key, foreign key, index? [R]
+26. Write a query to find all reservations/guests arriving today. (SELECT … WHERE …) [JD]
+27. Explain INNER JOIN vs LEFT JOIN. When would you use a LEFT JOIN? [R]
+28. How do you find duplicate records? (GROUP BY … HAVING COUNT(*) > 1) [R]
+29. What does GROUP BY do? Difference between WHERE and HAVING? [R]
+30. What's the difference between DELETE, TRUNCATE, and DROP? [G]
+31. A query is running very slowly. How would you approach it? (execution plan, indexes, locking) [R]
+32. What are transactions and ACID properties? Why use BEGIN/COMMIT/ROLLBACK before changing production data? [R]
+33. How do you back up and restore a database? What's the difference between full, differential, and log backups? [G]
+34. A customer's production database is down. What do you do first? [R]
+35. Would you ever run an UPDATE directly on a production database? What precautions would you take? [JD]
+36. Oracle vs SQL Server — have you used either? (OPERA on-premise runs on Oracle Database) [JD]
+
+### 5.4 Application, server & integration troubleshooting
+37. Walk me through your troubleshooting methodology for an application issue. (reproduce → scope: one user/all users → logs → recent changes → isolate app vs server vs network vs data → fix → document) [R]
+38. In a production outage, what's your first priority — finding the root cause or restoring service? [R]
+39. An issue happens intermittently with no clear error. How do you triage it? [G]
+40. What logs would you check for an application issue, and how do you read them? [G]
+41. What is an interface/integration? Explain how two systems exchange data. (APIs, XML messages, files, middleware) [G]
+42. Difference between REST and SOAP? What are XML and JSON? [R]
+43. What do HTTP status codes 400, 401, 403, 404, 500, 503 mean? [R]
+44. Messages between the PMS and an external system are failing/stuck in a queue. How do you investigate and resubmit them? [G]
+45. How do you test an API? (Postman, curl) [G]
+46. How do you tell whether a problem is on our side or the third-party vendor's side? What evidence do you send them? [JD]
+47. A fix requires a restart of a service during hotel operations. How do you plan and communicate that? [JD]
+48. How do you prioritize incidents? (impact × urgency, P1–P4; e.g., front desk can't check in guests = P1) [G]
+49. What is ITIL? Difference between an incident, a problem, and a change request? [R]
+50. Tell me about the hardest technical issue you've resolved. [R]
+
+### 5.5 OPERA / hotel PMS & hospitality interfaces
+51. What is a PMS? What are its core modules? (reservations, front desk, rooms/housekeeping, cashiering, accounts receivable, reports, end of day) [JD]
+52. Have you used OPERA (V5 or OPERA Cloud) or another PMS? Which modules? [R]
+53. Walk me through a guest's lifecycle in a PMS: reservation → check-in → posting charges → check-out. [JD]
+54. What is the Night Audit / End of Day? What does it do and what can make it fail? (open sessions, unbalanced folios, interface postings, setup validation) [JD]
+55. What systems typically integrate with a hotel PMS? (POS, door locks/key cards, PBX/telephony, Wi-Fi, IPTV, minibar, payment gateway, channel manager/CRS, revenue management, Sales & Catering) [JD]
+56. What is OXI? What is IFC / FIAS? What is OHIP / OWS? (OPERA's integration layers) [JD]
+57. The key card encoder stopped working at the front desk. How do you troubleshoot? (interface status, IFC service, network to lock server, encoder hardware, vendor) [JD]
+58. Restaurant (POS) charges are not posting to guest rooms. What do you check? (interface running, room/guest lookup, posting logs, mapping of revenue codes) [JD]
+59. Phone calls from rooms aren't being charged / room status not updating from the PBX. Steps? [JD]
+60. Reservations from a booking channel/CRS aren't appearing in the PMS. How do you investigate? (OXI message log, mapping/conversion codes, rate/room type mapping) [JD]
+61. What is PCI DSS and why does it matter for hotel payment integrations? [JD]
+62. Have you worked with Oracle Simphony, Micros, or other hospitality POS? [JD]
+63. What hotel front-office/back-office experience do you have? (Oracle job posts note they value people who understand hotel operations, not just software) [G]
+
+### 5.6 Implementation & go-live
+64. Walk me through the phases of an implementation you've done. (discovery → configuration → data migration → testing/UAT → training → go-live → hypercare) [G]
+65. How do you gather requirements / configuration details from a hotel? [G]
+66. How do you handle data migration from an old system? (mapping, cleaning, test loads, reconciliation, rollback plan) [G]
+67. What is UAT and who should sign off? [G]
+68. What is a cutover plan? What goes into a go-live checklist? [G]
+69. Something critical breaks two hours before go-live. What do you do? [G]
+70. How do you handle a client who wants to change scope late in the project? [G]
+71. What is hypercare / post-go-live support, and how long should it last? [G]
+72. How would you install and configure an application on a new server from scratch? (prerequisites, service accounts, DB connection, licensing, testing) [JD]
+73. How do you manage multiple implementations or tasks at once? [R]
+
+### 5.7 Training, documentation & communication
+74. How would you train front-desk staff who are not technical on a new system? [G]
+75. How do you train "super users" so the property can support itself after go-live? [G]
+76. Explain a technical issue (e.g., an interface outage) to a hotel General Manager in plain language. [JD]
+77. What technical documentation have you written? (install guides, runbooks, configuration docs, handover/KT docs, ticket notes) [JD]
+78. What makes good knowledge-transfer documentation? [JD]
+79. How do you communicate status and risks to a project manager or client during an implementation? [G]
+
+### 5.8 Vendors, third parties & non-technical
+80. Tell me about a time you worked with a third-party vendor to solve an issue. How did you keep it moving? [JD]
+81. A vendor says the problem is on your side; you think it's on theirs. How do you handle it? [JD]
+82. A hotel manager is angry because guests can't check in. How do you handle the call? [R]
+83. Are you comfortable with travel to properties, on-call, night/weekend go-lives? (hotels run 24/7) [G]
+84. Why hospitality technology? Why this company? [G]
+85. Tell me about a time you had to learn a new system quickly. [G]
+86. Tell me about a time you made a mistake in a production environment and what you did. [G]
+87. Where do you see yourself in 2–3 years? (support → implementation → solutions/architect) [G]
+
+---
+
+## 6. Fresh Graduate Set — Hospitality Tech Implementation & Support (no industry experience)
+
+A beginner-level version of Section 5. Interviewers for entry-level hires mostly check **basics, how you think,
+attitude, and willingness to learn** — not years of OPERA or server experience. Each question has a short
+hint (→) of what a good beginner answer covers. It's OK to say "I haven't done that yet, but here's how I'd approach it."
+
+### 6.1 About you & motivation
+1. Tell me about yourself. → school/course, a project or two, why IT support, one personal strength.
+2. Why do you want to work in hospitality technology? → hotels run 24/7, tech directly affects guests, you like helping people + solving problems.
+3. What do you know about our company / the products we support? → do 10 minutes of homework on the company and on what a hotel PMS is.
+4. You don't have work experience in this field. Why should we hire you? → projects, labs, school work, quick learner, customer-facing part-time jobs.
+5. What was your favorite subject or project in school, and why? [G]
+6. Where do you see yourself in 2–3 years? → grow from support into implementation; earn a cert.
+7. Are you okay with shifting schedules, travel to hotels, or occasional night/weekend work? [G]
+
+### 6.2 Basic computer & Windows
+8. What is the difference between hardware and software? Between RAM and storage?
+9. What is an operating system? What is the difference between Windows 10/11 and Windows Server? → Server runs services for many users.
+10. What is a Windows "service"? How would you restart one? → services.msc, or Task Manager → Services.
+11. A computer is very slow. What would you check first? → Task Manager (CPU, memory, disk), recent changes, restart. [Reddit]
+12. What is Event Viewer used for? → reading error logs to find what went wrong. [G]
+13. How do you connect to another computer remotely? → Remote Desktop (RDP), remote support tools.
+14. What is a virtual machine? Have you used one? → mention VirtualBox/Hyper-V labs if you did any.
+15. What is Active Directory? How do you reset a user's password? → central list of users/computers; verify identity first. [R]
+
+### 6.3 Basic networking
+16. What is an IP address? How do you find your computer's IP? → `ipconfig`. [Reddit]
+17. What is DNS? What is DHCP? → DNS turns names into IPs; DHCP hands out IPs automatically. [R]
+18. What is the difference between a router and a switch? [G]
+19. A computer can't connect to the internet but others can. What do you do? → cable/Wi-Fi, `ipconfig`, `ping` gateway, `ping 8.8.8.8`, `ping google.com`, flush DNS. [Reddit]
+20. What does the `ping` command do? [G]
+21. What is a firewall? → controls which traffic is allowed in/out.
+22. What is Wi-Fi vs LAN? Why might a hotel have separate networks for guests and staff? → security.
+
+### 6.4 Basic database & SQL
+23. What is a database? What is a table, a row, and a column?
+24. What is a primary key? → a unique ID for each row.
+25. Write a simple query to show all guests from a table called `guests`. → `SELECT * FROM guests;`
+26. How would you find guests whose last name is "Santos"? → `SELECT * FROM guests WHERE last_name = 'Santos';`
+27. What is the difference between `DELETE` and `SELECT`? Why be careful with `UPDATE`/`DELETE`? → always use `WHERE`; back up first.
+28. What is a JOIN, in simple words? → combining rows from two tables using a shared column. [R]
+29. Why are database backups important? [G]
+
+### 6.5 Basic troubleshooting & thinking process
+30. Walk me through how you troubleshoot a problem you've never seen before. → ask questions → reproduce → check the simple things → check logs → search knowledge base → fix or escalate → document. [R]
+31. What questions would you ask a user who says "the system is not working"? → what exactly, since when, only you or everyone, any error message, anything changed?
+32. What do you do if you don't know the answer? → say so honestly, research (docs, knowledge base), ask a senior, follow up with the customer. [G]
+33. When should you escalate an issue? → when it's beyond your access/skill, it affects many users, or time limit is reached. [R]
+34. Tell me about a technical problem you solved (school, home, project). [Reddit]
+35. What is an error log, and why is it useful?
+36. What is the difference between an error that affects one user and one that affects everyone? Which do you fix first? → prioritize by impact.
+
+### 6.6 Hotel & hospitality basics (learnable before the interview)
+37. What is a Property Management System (PMS)? → the hotel's main system for reservations, check-in/out, rooms, billing. [JD]
+38. Have you heard of OPERA? What do you know about it? → Oracle's hotel PMS used by many big hotel chains. [JD]
+39. What happens from the time a guest books a room until they check out? → reservation → check-in → stay/charges → check-out/payment. [JD]
+40. What other systems might a hotel use besides the PMS? → restaurant POS, door key cards, phones, Wi-Fi, booking websites. [JD]
+41. The front desk can't make key cards for guests. Why is this urgent, and what would you check first? → guests can't enter rooms; check the encoder is on/connected, then escalate. [JD]
+42. What is a "go-live"? → the day a new system starts being used for real. [G]
+
+### 6.7 Customer service, teamwork & soft skills
+43. How would you explain a technical problem to a hotel staff member who isn't technical? → simple words, no jargon, focus on what it means for them. [R]
+44. A hotel manager is upset because the system is down. How would you handle the call? → stay calm, listen, apologize, explain next steps, give updates. [R]
+45. Tell me about a time you worked in a team (school group project is fine). [G]
+46. How would you teach someone to use a new system? → show, let them try, give a simple guide, check back. [G]
+47. Why is documentation important? What would you write down after fixing an issue? → problem, cause, steps taken, result. [JD]
+48. How do you handle pressure or many tasks at once? [Reddit]
+49. Tell me about a mistake you made and what you learned. [G]
+50. How do you keep learning new technology? → online courses, YouTube, home lab, certifications (CompTIA A+/Network+, Microsoft basics). [G]
+
+### 6.8 Good questions for YOU to ask them
+- What does training look like for new hires? Will I shadow a senior engineer?
+- What does a typical day look like — more support tickets or more implementation projects?
+- How much travel is involved, and are there night/weekend go-lives?
+- What would make someone successful in their first 90 days?
+
+---
+
 ## Tips commonly repeated across sources
 - Use the **STAR** method (Situation, Task, Action, Result) for behavioral questions.
 - For troubleshooting questions, interviewers care more about your **process** (gather info → isolate → test → fix → document) than memorized definitions.
@@ -201,6 +394,27 @@ is flexible, and spots opportunities on the call.
 - [r/callcentres — I have an interview for a call center job tomorrow](https://www.reddit.com/r/callcentres/comments/fy3r9v/i_have_an_interview_for_a_call_center_job_tomorrow/)
 - [r/callcentres — I hate this interview question…](https://www.reddit.com/r/callcentres/comments/1fvr77x/i_hate_this_interview_question/)
 - [r/CustomerService — Missed job opportunity: chat exercise prompts](https://www.reddit.com/r/CustomerService/comments/1al712c/hi_everyone_im_a_little_sad_for_a_missed_job/)
+
+### Hospitality technology / implementation role (Section 5)
+- [Oracle job post — OPERA PMS Implementation Consultant](https://en.wizbii.com/company/oracle/job/oracle-hospitality-opera-pms-implementation-consultant)
+- [Omm IT — Oracle Implementation Consultant (OPERA PMS Deployment Specialist)](https://www.tealhq.com/job/oracle-implementation-consultant_7ea1a205914346f41c3c92780adc4ec0ebe0a)
+- [Oracle OPERA (PMS) Support job post](https://www.jobleads.com/us/job/oracle-opera-pms-support--indiana--e51625c96e2537ee2d550fbce3c070786)
+- [AltexSoft — How to integrate with OPERA PMS (OXI, OWS, OHIP)](https://www.altexsoft.com/blog/opera-pms-integration/)
+- [Oracle docs — OPERA End of Day troubleshooting](https://docs.oracle.com/cd/E98457_01/opera_5_6_core_help/end_of_day_troubleshooting.htm)
+- [Oracle docs — OPERA Cloud End of Day (Night Audit) procedures](https://docs.oracle.com/en/industries/hospitality/opera-cloud/24.3/ocsuh/c_endofday_incomeaudit_setting_up_end_of_day_procedures_and_reports_ch.htm)
+- [Sea Digitalis — Hotel Systems Administrator interview Q&A](https://www.seadigitalis.com/en/hotel-systems-administrator-job-interview-questions-and-answers/)
+- [Glassdoor — Oracle Technical Support Analyst (candidate-reported)](https://www.glassdoor.com/Interview/Oracle-Technical-Support-Analyst-Interview-Questions-EI_IE1737.0,6_KO7,32.htm)
+- [Glassdoor — Oracle Customer Support Analyst (candidate-reported)](https://www.glassdoor.com/Interview/Oracle-Customer-Support-Analyst-Interview-Questions-EI_IE1737.0,6_KO7,31.htm)
+- [GeeksforGeeks — Oracle Technical Analyst (Support) interview experience](https://www.geeksforgeeks.org/interview-experiences/oracle-interview-experience-for-technical-analyst-on-campus/)
+- [Glassdoor — Technical support analyst: Windows Server, IIS, SQL (candidate-reported)](https://static.glassdoor.at/Interview/technical-support-analyst-interview-questions-SRCH_KO0,25_IP80.htm)
+- [Glassdoor — Production support engineer: IIS, SQL Server (candidate-reported)](https://static.glassdoor.es/Interview/production-support-engineer-interview-questions-SRCH_KO0,27_IP12.htm)
+- [Glassdoor — SQL support: duplicates, joins, group by (candidate-reported)](https://clear.glassdoor.nl/Interview/sql-support-interview-questions-SRCH_KO0,11_IP49.htm)
+- [InterviewBit — Application support interview questions](https://interviewbit.com/application-support-interview-questions)
+- [Sparktech — From logs to live incidents (application support)](https://buttondown.com/sparktechblog/archive/from-logs-to-live-incidents-application-support/)
+- [Teal — Implementation consultant interview questions](https://tealhq.com/career-paths/implementation-consultant-interview-questions)
+- [startup.jobs — Implementation Consultant questions](https://startup.jobs/interview-questions/implementation-consultant)
+- [startup.jobs — Integrations Engineer questions](https://startup.jobs/interview-questions/integrations-engineer)
+- [DataCamp — SQL interview questions](https://www.datacamp.com/blog/top-sql-interview-questions-and-answers-for-beginners-and-intermediate-practitioners)
 
 ### Web
 - [Indeed — Technical support interview questions](https://www.indeed.com/hire/interview-questions/technical-support)

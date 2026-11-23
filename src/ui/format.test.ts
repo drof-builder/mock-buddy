@@ -32,3 +32,35 @@ test('sortCategories puts screening first, then known types, then custom ones A 
     'zebra',
   ])
 })
+
+test('categoryLabel names the technical support topic categories', () => {
+  expect(categoryLabel('networking')).toBe('Networking')
+  expect(categoryLabel('windows-ad')).toBe('Windows & Active Directory')
+  expect(categoryLabel('computer-basics-security')).toBe('Computer basics & security')
+  expect(categoryLabel('databases-sql')).toBe('Databases & SQL')
+  expect(categoryLabel('hotel-systems')).toBe('Hotel systems')
+})
+
+test('sortCategories keeps the technical support topics in reading order', () => {
+  expect(
+    sortCategories([
+      'soft-skills',
+      'hotel-systems',
+      'troubleshooting',
+      'databases-sql',
+      'computer-basics-security',
+      'windows-ad',
+      'networking',
+      'basic-screening',
+    ]),
+  ).toEqual([
+    'basic-screening',
+    'networking',
+    'windows-ad',
+    'computer-basics-security',
+    'databases-sql',
+    'hotel-systems',
+    'troubleshooting',
+    'soft-skills',
+  ])
+})
