@@ -30,6 +30,8 @@ export function useRecording(): UseRecording {
   const [status, setStatusState] = useState<RecordingStatus>('idle')
   // The ref is read synchronously so double taps see the latest status.
   const statusRef = useRef<RecordingStatus>('idle')
+  // Bumped by cancel(); a start/stop from an older attempt then stays quiet.
+  const attemptRef = useRef(0)
   const [startedAt, setStartedAt] = useState<number | null>(null)
   const [now, setNow] = useState(() => Date.now())
   const [error, setError] = useState<RecorderErrorCode | null>(null)
@@ -64,13 +66,16 @@ export function useRecording(): UseRecording {
     if (statusRef.current !== 'idle') return
     setStatus('starting')
     setError(null)
+    const attempt = attemptRef.current
     try {
       await recorder.start()
+      if (attempt !== attemptRef.current) return
       const t = Date.now()
       setStartedAt(t)
       setNow(t)
       setStatus('recording')
     } catch (e) {
+      if (attempt !== attemptRef.current) return
       setError(errorCode(e))
       setStatus('idle')
     }
@@ -79,19 +84,23 @@ export function useRecording(): UseRecording {
   const stop = useCallback(async (): Promise<Recording | null> => {
     if (statusRef.current !== 'recording') return null
     setStatus('stopping')
+    const attempt = attemptRef.current
     try {
       return await recorder.stop()
     } catch (e) {
-      setError(errorCode(e))
+      if (attempt === attemptRef.current) setError(errorCode(e))
       return null
     } finally {
-      setStartedAt(null)
-      setStatus('idle')
+      if (attempt === attemptRef.current) {
+        setStartedAt(null)
+        setStatus('idle')
+      }
     }
   }, [recorder, setStatus])
 
   const cancel = useCallback(() => {
     if (statusRef.current === 'idle') return
+    attemptRef.current++
     recorder.cancel()
     setStartedAt(null)
     setStatus('idle')

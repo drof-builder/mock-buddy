@@ -103,4 +103,29 @@ describe('useRecording', () => {
     window.dispatchEvent(after)
     expect(after.defaultPrevented).toBe(false)
   })
+
+  test('unmounting while the microphone is still opening cancels the recorder', async () => {
+    const { result, recorder, unmount } = setup(createFakeRecorder({ deferStart: true }))
+    act(() => {
+      void result.current.start()
+    })
+    expect(result.current.status).toBe('starting')
+    unmount()
+    expect(recorder.cancelCalls).toBe(1)
+  })
+
+  test('cancelling while the microphone is opening does not report an error', async () => {
+    const { result, recorder } = setup(createFakeRecorder({ deferStart: true }))
+    let starting: Promise<void> = Promise.resolve()
+    act(() => {
+      starting = result.current.start()
+    })
+    act(() => result.current.cancel())
+    await act(async () => {
+      recorder.finishStart()
+      await starting
+    })
+    expect(result.current.error).toBeNull()
+    expect(result.current.status).toBe('idle')
+  })
 })

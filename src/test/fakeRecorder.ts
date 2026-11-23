@@ -5,15 +5,25 @@ export interface FakeRecorder extends Recorder {
   readonly stopCalls: number
   readonly cancelCalls: number
   readonly recording: boolean
+  /** With `deferStart`, lets the test decide when the microphone finishes opening. */
+  finishStart(): void
 }
 
 export function createFakeRecorder(
-  opts: { supported?: boolean; startError?: RecorderErrorCode; stopError?: RecorderErrorCode; durationSec?: number } = {},
+  opts: {
+    supported?: boolean
+    startError?: RecorderErrorCode
+    stopError?: RecorderErrorCode
+    durationSec?: number
+    deferStart?: boolean
+  } = {},
 ): FakeRecorder {
   let startCalls = 0
   let stopCalls = 0
   let cancelCalls = 0
   let recording = false
+  let cancelledDuringStart = false
+  let pendingStart: { resolve(): void; reject(e: unknown): void } | null = null
 
   return {
     get startCalls() {
@@ -32,7 +42,20 @@ export function createFakeRecorder(
     async start() {
       startCalls++
       if (opts.startError) throw new RecorderError(opts.startError)
+      if (opts.deferStart) {
+        cancelledDuringStart = false
+        await new Promise<void>((resolve, reject) => {
+          pendingStart = { resolve, reject }
+        })
+      }
       recording = true
+    },
+    finishStart() {
+      const p = pendingStart
+      pendingStart = null
+      if (!p) return
+      if (cancelledDuringStart) p.reject(new RecorderError('failed', 'Cancelled'))
+      else p.resolve()
     },
     async stop(): Promise<Recording> {
       stopCalls++
@@ -47,6 +70,7 @@ export function createFakeRecorder(
     cancel() {
       cancelCalls++
       recording = false
+      if (pendingStart) cancelledDuringStart = true
     },
   }
 }
