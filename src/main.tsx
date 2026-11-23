@@ -5,6 +5,7 @@ import { createRepository } from './services/db'
 import { createMediaRecorder } from './services/recorder'
 import { browserStorage } from './services/storage'
 import { AppRoutes } from './ui/AppRoutes'
+import { PwaUpdatePrompt } from './ui/PwaUpdatePrompt'
 import { ServicesProvider, type Services } from './ui/services'
 import './ui/styles.css'
 
@@ -20,6 +21,7 @@ createRoot(document.getElementById('root')!).render(
       <HashRouter>
         <AppRoutes />
       </HashRouter>
+      <PwaUpdatePrompt />
     </ServicesProvider>
   </StrictMode>,
 )
