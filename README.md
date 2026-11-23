@@ -14,7 +14,11 @@ rate yourself. Everything stays on your device — no account, no server.
 - **My Questions** — add your own questions and hide starter questions you don't need.
 - **Works offline** and installs to your home screen.
 
-Starter roles: Behavioral, Technical Support, Customer Service (75 questions).
+Starter roles and question types (98 questions):
+
+- **Behavioral:** Basic / screening · Past experience (STAR) · Work style
+- **Technical Support:** Basic / screening · Technical knowledge · Troubleshooting · Soft skills
+- **Customer Service:** Basic / screening · Situational · Role-play · Tools & metrics · Soft skills
 
 ## Install on your phone
 

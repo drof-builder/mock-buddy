@@ -142,17 +142,19 @@ Repository functions (e.g. `saveAnswer`, `listQuickAnswers`,
 context so tests can use `fake-indexeddb`.
 
 ### Starter questions
-`src/data/questions.json`: ~75 entries (~25 per role), each
+`src/data/questions.json`: 98 entries, each
 `{ id, role, category, text }`. IDs are stable strings (e.g. `beh-001`,
 `ts-001`, `cs-001`). Adding a role later = add a value to the `Role` type
 and entries to the JSON.
 
 Roles: `behavioral`, `tech-support`, `customer-service`.
-Example categories — behavioral: intro, strengths-weaknesses, conflict,
-teamwork, failure, motivation; tech-support: troubleshooting,
-communication, prioritization, technical-basics, difficult-users;
-customer-service: difficult-customers, de-escalation, empathy,
-problem-solving, multitasking.
+Categories are question types (changed 2026-11-24 from topic categories),
+each with at least 6 questions — behavioral: basic-screening,
+past-experience, work-style; tech-support: basic-screening,
+technical-knowledge, troubleshooting, soft-skills; customer-service:
+basic-screening, situational, role-play, tools-metrics, soft-skills.
+Display names and order live in `src/ui/format.ts`. Question ids never
+change (hidden-question settings depend on them).
 
 ### Tooling
 - Vite, React (current version from the Vite react-ts template), TypeScript strict, React Router (HashRouter), Dexie.

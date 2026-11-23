@@ -59,7 +59,7 @@ describe('RoleCategoryPicker', () => {
       <RoleCategoryPicker
         role="behavioral"
         category=""
-        categories={['conflict', 'intro']}
+        categories={['basic-screening', 'past-experience']}
         onRoleChange={onRoleChange}
         onCategoryChange={onCategoryChange}
       />,
@@ -67,8 +67,9 @@ describe('RoleCategoryPicker', () => {
     await userEvent.selectOptions(screen.getByLabelText('Role'), 'Technical Support')
     expect(onRoleChange).toHaveBeenCalledWith('tech-support')
     expect(screen.getByLabelText('Category')).toHaveDisplayValue('Any category')
-    await userEvent.selectOptions(screen.getByLabelText('Category'), 'conflict')
-    expect(onCategoryChange).toHaveBeenCalledWith('conflict')
+    expect(screen.getByRole('option', { name: 'Past experience (STAR)' })).toBeInTheDocument()
+    await userEvent.selectOptions(screen.getByLabelText('Category'), 'Past experience (STAR)')
+    expect(onCategoryChange).toHaveBeenCalledWith('past-experience')
   })
 
   test('can hide the category picker', () => {
